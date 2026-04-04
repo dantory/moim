@@ -36,8 +36,8 @@ export function MeetingViewToggle({ meetings }: MeetingViewToggleProps) {
   const [isListPanelOpen, setIsListPanelOpen] = React.useState(true);
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
+    <div className="flex flex-col h-full">
+      <div className="flex-none flex justify-end mb-2">
         <div className="inline-flex rounded-md border bg-background p-1">
           <Button
             variant={viewMode === "list" ? "secondary" : "ghost"}
@@ -61,9 +61,11 @@ export function MeetingViewToggle({ meetings }: MeetingViewToggleProps) {
       </div>
 
       {viewMode === "list" ? (
-        <MeetingList meetings={meetings} />
+        <div className="flex-1 overflow-y-auto">
+          <MeetingList meetings={meetings} />
+        </div>
       ) : (
-        <div className="relative">
+        <div className="relative flex-1 min-h-0">
           <MeetingMapView meetings={meetings} />
           <div
             className={cn(

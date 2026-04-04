@@ -63,16 +63,20 @@ export default async function HomePage({
   }
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">모임 찾기</h1>
-        <p className="text-muted-foreground mt-2">
+    <div className="flex flex-col h-[calc(100vh-8rem)]">
+      <div className="flex-none mb-4">
+        <h1 className="text-2xl font-bold tracking-tight">모임 찾기</h1>
+        <p className="text-sm text-muted-foreground mt-1">
           관심있는 모임을 찾고 참여하세요.
         </p>
       </div>
 
-      <MeetingFilter />
-      <MeetingViewToggle meetings={meetings} />
+      <div className="flex-none mb-4">
+        <MeetingFilter />
+      </div>
+      <div className="flex-1 min-h-0">
+        <MeetingViewToggle meetings={meetings} />
+      </div>
     </div>
   )
 }
