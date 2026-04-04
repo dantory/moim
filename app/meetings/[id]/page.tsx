@@ -8,6 +8,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { Button } from "@/app/components/ui/Button"
 import { JoinButton } from "./JoinButton"
+import { DeleteButton } from "./DeleteButton"
 
 export default async function MeetingDetailPage({
   params,
@@ -61,11 +62,14 @@ export default async function MeetingDetailPage({
             {meeting.category}
           </span>
           {isCreator && (
-            <Link href={`/meetings/${meeting.id}/edit`}>
-              <Button variant="outline" size="sm">
-                수정하기
-              </Button>
-            </Link>
+            <div className="flex gap-2">
+              <Link href={`/meetings/${meeting.id}/edit`}>
+                <Button variant="outline" size="sm">
+                  수정하기
+                </Button>
+              </Link>
+              <DeleteButton meetingId={meeting.id} />
+            </div>
           )}
         </div>
         

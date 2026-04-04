@@ -35,6 +35,7 @@ export function LocationPicker({
     }>
   >([]);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -55,34 +56,64 @@ export function LocationPicker({
     if (!searchQuery.trim()) return;
 
     setIsLoading(true);
+    setError(null);
     try {
       const response = await fetch(
-        `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(
-          searchQuery
-        )}`,
-        {
-          headers: {
-            Authorization: `KakaoAK ${process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY}`,
-          },
-        }
+        `/api/geocode?query=${encodeURIComponent(searchQuery)}`
       );
 
-      if (!response.ok) throw new Error("Search failed");
-
       const data = await response.json();
-      const results = data.documents.map((doc: {
-        address_name: string;
-        x: string;
-        y: string;
+
+      if (!response.ok) {
+        setError(data.error || "검색 중 오류가 발생했습니다");
+        setSearchResults([]);
+        return;
+      }
+
+      if (data.status !== "OK") {
+        let errorMessage = "검색에 실패했습니다";
+        switch (data.status) {
+          case "ZERO_RESULTS":
+            errorMessage = "검색 결과가 없습니다";
+            break;
+          case "OVER_QUERY_LIMIT":
+            errorMessage = "API 사용량 한도를 초과했습니다";
+            break;
+          case "REQUEST_DENIED":
+            errorMessage = "API 요청이 거부되었습니다";
+            break;
+          case "INVALID_REQUEST":
+            errorMessage = "잘못된 요청입니다";
+            break;
+          default:
+            errorMessage = `오류: ${data.status}`;
+        }
+        setError(errorMessage);
+        setSearchResults([]);
+        return;
+      }
+
+      const results = data.results.map((result: {
+        formatted_address: string;
+        geometry: {
+          location: {
+            lat: number;
+            lng: number;
+          };
+        };
       }) => ({
-        address: doc.address_name,
-        latitude: parseFloat(doc.y),
-        longitude: parseFloat(doc.x),
+        address: result.formatted_address,
+        latitude: result.geometry.location.lat,
+        longitude: result.geometry.location.lng,
       }));
 
       setSearchResults(results);
-    } catch (error) {
-      console.error("Address search failed:", error);
+      if (results.length === 0) {
+        setError("검색 결과가 없습니다");
+      }
+    } catch (err) {
+      console.error("Address search failed:", err);
+      setError(err instanceof Error ? err.message : "검색 중 오류가 발생했습니다");
       setSearchResults([]);
     } finally {
       setIsLoading(false);
@@ -102,6 +133,9 @@ export function LocationPicker({
 
   const handleClear = () => {
     onChange({ address: "", latitude: 0, longitude: 0 });
+    setError(null);
+    setSearchQuery("");
+    setSearchResults([]);
   };
 
   return (
@@ -110,7 +144,10 @@ export function LocationPicker({
         <Button
           type="button"
           variant="outline"
-          onClick={() => setIsOpen(true)}
+          onClick={() => {
+            setIsOpen(true);
+            setError(null);
+          }}
           className={cn(
             "flex-1 justify-start text-left font-normal",
             !value?.address && "text-muted-foreground"
@@ -168,9 +205,9 @@ export function LocationPicker({
               </div>
             )}
 
-            {searchResults.length === 0 && searchQuery && !isLoading && (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                검색 결과가 없습니다
+            {error && (
+              <p className="text-sm text-destructive text-center py-4">
+                {error}
               </p>
             )}
 
