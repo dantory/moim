@@ -182,11 +182,11 @@ export function LocationPicker({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  searchAddress();
-                }
-              }}
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    searchAddress();
+                  }
+                }}
               />
               <Button
                 type="button"
