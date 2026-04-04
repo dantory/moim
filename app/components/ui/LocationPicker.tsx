@@ -5,6 +5,7 @@ import { MapPin, X } from "lucide-react";
 import { Button } from "./Button";
 import { Input } from "./Input";
 import { cn } from "@/lib/utils";
+import { MapLocationPicker } from "./MapLocationPicker";
 
 interface LocationPickerProps {
   value?: {
@@ -26,6 +27,7 @@ export function LocationPicker({
   placeholder = "장소를 검색하세요",
 }: LocationPickerProps) {
   const [isOpen, setIsOpen] = React.useState(false);
+  const [isMapOpen, setIsMapOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [searchResults, setSearchResults] = React.useState<
     Array<{
@@ -211,19 +213,43 @@ export function LocationPicker({
               </p>
             )}
 
-            <div className="flex justify-end gap-2 border-t border-border pt-4">
+            <div className="border-t border-border pt-4 space-y-2">
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
-                onClick={() => setIsOpen(false)}
+                className="w-full"
+                onClick={() => {
+                  setIsOpen(false);
+                  setIsMapOpen(true);
+                }}
               >
-                닫기
+                <MapPin className="mr-2 h-4 w-4" />
+                지도에서 선택하기
               </Button>
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsOpen(false)}
+                >
+                  닫기
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       )}
+
+      <MapLocationPicker
+        isOpen={isMapOpen}
+        onClose={() => setIsMapOpen(false)}
+        onSelect={(location) => {
+          onChange(location);
+          setIsMapOpen(false);
+        }}
+        initialLocation={value}
+      />
     </div>
   );
 }
