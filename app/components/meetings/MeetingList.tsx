@@ -13,9 +13,11 @@ interface MeetingListProps {
       participants: number
     }
   }[]
+  onMeetingClick?: (id: string) => void
+  selectedId?: string | null
 }
 
-export function MeetingList({ meetings }: MeetingListProps) {
+export function MeetingList({ meetings, onMeetingClick, selectedId }: MeetingListProps) {
   if (meetings.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -28,9 +30,19 @@ export function MeetingList({ meetings }: MeetingListProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 gap-4">
       {meetings.map((meeting) => (
-        <MeetingCard key={meeting.id} meeting={meeting} />
+        <div
+          key={meeting.id}
+          onClick={() => onMeetingClick?.(meeting.id)}
+          className={`cursor-pointer transition-all ${
+            selectedId === meeting.id
+              ? "ring-2 ring-primary-600 rounded-lg"
+              : ""
+          }`}
+        >
+          <MeetingCard meeting={meeting} />
+        </div>
       ))}
     </div>
   )

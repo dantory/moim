@@ -25,6 +25,8 @@ interface MeetingMapViewProps {
     };
     distance?: number;
   }>;
+  selectedId?: string | null;
+  onMarkerClick?: (id: string) => void;
 }
 
 const mapContainerStyle = {
@@ -37,10 +39,8 @@ const defaultCenter = {
   lng: 126.978,
 };
 
-export function MeetingMapView({ meetings }: MeetingMapViewProps) {
+export function MeetingMapView({ meetings, selectedId, onMarkerClick }: MeetingMapViewProps) {
   const { isLoaded } = useGoogleMapsLoader();
-
-  const [selectedMeeting, setSelectedMeeting] = React.useState<string | null>(null);
   const mapRef = React.useRef<google.maps.Map | null>(null);
 
   const meetingsWithLocation = meetings.filter(
@@ -100,12 +100,12 @@ export function MeetingMapView({ meetings }: MeetingMapViewProps) {
           <Marker
             key={meeting.id}
             position={{ lat: meeting.latitude, lng: meeting.longitude }}
-            onClick={() => setSelectedMeeting(meeting.id)}
+            onClick={() => onMarkerClick?.(meeting.id)}
           >
-            {selectedMeeting === meeting.id && (
+            {selectedId === meeting.id && (
               <InfoWindow
                 position={{ lat: meeting.latitude, lng: meeting.longitude }}
-                onCloseClick={() => setSelectedMeeting(null)}
+                onCloseClick={() => onMarkerClick?.("")}
               >
                 <div className="p-2 min-w-[200px]">
                   <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 mb-2">

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { calculateDistanceInKm } from "@/lib/location"
 import { MeetingFilter } from "./components/meetings/MeetingFilter"
-import { MeetingViewToggle } from "./components/meetings/MeetingViewToggle"
+import { MeetingSplitView } from "./components/meetings/MeetingSplitView"
 
 export const dynamic = "force-dynamic"
 
@@ -72,7 +72,7 @@ export default async function HomePage({
       </div>
 
       <MeetingFilter />
-      <MeetingViewToggle meetings={meetings} />
+      <MeetingSplitView meetings={meetings} />
     </div>
   )
 }
