@@ -2,10 +2,11 @@
 
 import * as React from "react";
 import { X, MapPin, Search } from "lucide-react";
-import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
+import { GoogleMap, Marker } from "@react-google-maps/api";
 import { Button } from "./Button";
 import { Input } from "./Input";
 import { cn } from "@/lib/utils";
+import { useGoogleMapsLoader } from "@/lib/google-maps";
 
 interface MapLocationPickerProps {
   isOpen: boolean;
@@ -38,10 +39,7 @@ export function MapLocationPicker({
   onSelect,
   initialLocation,
 }: MapLocationPickerProps) {
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-    libraries: ["places"],
-  });
+  const { isLoaded } = useGoogleMapsLoader();
 
   const [searchQuery, setSearchQuery] = React.useState("");
   const [markerPosition, setMarkerPosition] = React.useState<

@@ -1,12 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { GoogleMap, Marker, InfoWindow, useJsApiLoader } from "@react-google-maps/api";
+import { GoogleMap, Marker, InfoWindow } from "@react-google-maps/api";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import Link from "next/link";
 import { MapPin, Users, Calendar } from "lucide-react";
 import { Button } from "../ui/Button";
+import { useGoogleMapsLoader } from "@/lib/google-maps";
 
 interface MeetingMapViewProps {
   meetings: Array<{
@@ -37,9 +38,7 @@ const defaultCenter = {
 };
 
 export function MeetingMapView({ meetings }: MeetingMapViewProps) {
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-  });
+  const { isLoaded } = useGoogleMapsLoader();
 
   const [selectedMeeting, setSelectedMeeting] = React.useState<string | null>(null);
   const mapRef = React.useRef<google.maps.Map | null>(null);
