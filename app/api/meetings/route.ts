@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { calculateDistanceInKm } from "@/lib/location"
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url)
     const category = searchParams.get("category")
     const search = searchParams.get("search")
+    const lat = searchParams.get("lat")
+    const lng = searchParams.get("lng")
+    const radius = searchParams.get("radius")
 
     const where: Record<string, unknown> = {}
 
@@ -21,7 +25,7 @@ export async function GET(req: Request) {
       ]
     }
 
-    const meetings = await prisma.meeting.findMany({
+    let meetings = await prisma.meeting.findMany({
       where,
       include: {
         creator: {
@@ -40,6 +44,30 @@ export async function GET(req: Request) {
       },
       orderBy: { createdAt: "desc" },
     })
+
+    if (lat && lng && radius) {
+      const userLat = parseFloat(lat)
+      const userLng = parseFloat(lng)
+      const radiusKm = parseFloat(radius)
+
+      meetings = meetings
+        .filter((meeting) => {
+          if (!meeting.latitude || !meeting.longitude) return false
+          const distance = calculateDistanceInKm(
+            { latitude: userLat, longitude: userLng },
+            { latitude: meeting.latitude, longitude: meeting.longitude }
+          )
+          return distance <= radiusKm
+        })
+        .map((meeting) => ({
+          ...meeting,
+          distance: calculateDistanceInKm(
+            { latitude: userLat, longitude: userLng },
+            { latitude: meeting.latitude!, longitude: meeting.longitude! }
+          ),
+        }))
+        .sort((a, b) => (a.distance || 0) - (b.distance || 0))
+    }
 
     return NextResponse.json(meetings)
   } catch (error) {
@@ -63,7 +91,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json()
-    const { title, description, category, maxParticipants, date, location } = body
+    const { title, description, category, maxParticipants, date, location, latitude, longitude } = body
 
     if (!title || !category || !date) {
       return NextResponse.json(
@@ -80,6 +108,8 @@ export async function POST(req: Request) {
         maxParticipants: maxParticipants || 10,
         date: new Date(date),
         location,
+        latitude,
+        longitude,
         creatorId: session.user.id,
       },
       include: {

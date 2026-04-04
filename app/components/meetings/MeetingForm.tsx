@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from "../ui/Card"
 import { DateTimePicker } from "../ui/DateTimePicker"
+import { LocationPicker } from "../ui/LocationPicker"
 
 const CATEGORIES = ["스터디", "친목", "운동", "취미", "기타"]
 
@@ -25,6 +26,8 @@ const meetingSchema = z.object({
   maxParticipants: z.number().min(2, "최소 2명 이상이어야 합니다.").max(100, "최대 100명까지 가능합니다."),
   date: z.date().min(new Date(), "과거 날짜는 선택할 수 없습니다."),
   location: z.string().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
 })
 
 type MeetingValues = z.infer<typeof meetingSchema>
@@ -38,6 +41,8 @@ interface MeetingFormProps {
     maxParticipants: number
     date: Date | string
     location: string | null
+    latitude: number | null
+    longitude: number | null
   }
   isEditing?: boolean
 }
@@ -52,6 +57,8 @@ export function MeetingForm({ initialData, isEditing }: MeetingFormProps) {
         title: initialData.title,
         description: initialData.description || undefined,
         location: initialData.location || undefined,
+        latitude: initialData.latitude || undefined,
+        longitude: initialData.longitude || undefined,
         category: initialData.category,
         maxParticipants: initialData.maxParticipants,
         date: new Date(initialData.date),
@@ -202,13 +209,31 @@ export function MeetingForm({ initialData, isEditing }: MeetingFormProps) {
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="location" className="text-sm font-medium">
+            <label className="text-sm font-medium">
               장소
             </label>
-            <Input
-              id="location"
-              placeholder="모임 장소를 입력하세요 (온라인인 경우 링크)"
-              {...register("location")}
+            <Controller
+              name="location"
+              control={control}
+              render={({ field }) => (
+                <LocationPicker
+                  value={
+                    field.value
+                      ? {
+                          address: field.value,
+                          latitude: control._formValues.latitude || 0,
+                          longitude: control._formValues.longitude || 0,
+                        }
+                      : undefined
+                  }
+                  onChange={(location) => {
+                    field.onChange(location.address);
+                    control._formValues.latitude = location.latitude;
+                    control._formValues.longitude = location.longitude;
+                  }}
+                  placeholder="장소를 검색하세요"
+                />
+              )}
             />
           </div>
 

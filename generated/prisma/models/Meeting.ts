@@ -28,10 +28,14 @@ export type AggregateMeeting = {
 
 export type MeetingAvgAggregateOutputType = {
   maxParticipants: number | null
+  latitude: number | null
+  longitude: number | null
 }
 
 export type MeetingSumAggregateOutputType = {
   maxParticipants: number | null
+  latitude: number | null
+  longitude: number | null
 }
 
 export type MeetingMinAggregateOutputType = {
@@ -42,6 +46,8 @@ export type MeetingMinAggregateOutputType = {
   maxParticipants: number | null
   date: Date | null
   location: string | null
+  latitude: number | null
+  longitude: number | null
   createdAt: Date | null
   updatedAt: Date | null
   creatorId: string | null
@@ -55,6 +61,8 @@ export type MeetingMaxAggregateOutputType = {
   maxParticipants: number | null
   date: Date | null
   location: string | null
+  latitude: number | null
+  longitude: number | null
   createdAt: Date | null
   updatedAt: Date | null
   creatorId: string | null
@@ -68,6 +76,8 @@ export type MeetingCountAggregateOutputType = {
   maxParticipants: number
   date: number
   location: number
+  latitude: number
+  longitude: number
   createdAt: number
   updatedAt: number
   creatorId: number
@@ -77,10 +87,14 @@ export type MeetingCountAggregateOutputType = {
 
 export type MeetingAvgAggregateInputType = {
   maxParticipants?: true
+  latitude?: true
+  longitude?: true
 }
 
 export type MeetingSumAggregateInputType = {
   maxParticipants?: true
+  latitude?: true
+  longitude?: true
 }
 
 export type MeetingMinAggregateInputType = {
@@ -91,6 +105,8 @@ export type MeetingMinAggregateInputType = {
   maxParticipants?: true
   date?: true
   location?: true
+  latitude?: true
+  longitude?: true
   createdAt?: true
   updatedAt?: true
   creatorId?: true
@@ -104,6 +120,8 @@ export type MeetingMaxAggregateInputType = {
   maxParticipants?: true
   date?: true
   location?: true
+  latitude?: true
+  longitude?: true
   createdAt?: true
   updatedAt?: true
   creatorId?: true
@@ -117,6 +135,8 @@ export type MeetingCountAggregateInputType = {
   maxParticipants?: true
   date?: true
   location?: true
+  latitude?: true
+  longitude?: true
   createdAt?: true
   updatedAt?: true
   creatorId?: true
@@ -217,6 +237,8 @@ export type MeetingGroupByOutputType = {
   maxParticipants: number
   date: Date
   location: string | null
+  latitude: number | null
+  longitude: number | null
   createdAt: Date
   updatedAt: Date
   creatorId: string
@@ -253,6 +275,8 @@ export type MeetingWhereInput = {
   maxParticipants?: Prisma.IntFilter<"Meeting"> | number
   date?: Prisma.DateTimeFilter<"Meeting"> | Date | string
   location?: Prisma.StringNullableFilter<"Meeting"> | string | null
+  latitude?: Prisma.FloatNullableFilter<"Meeting"> | number | null
+  longitude?: Prisma.FloatNullableFilter<"Meeting"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Meeting"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Meeting"> | Date | string
   creatorId?: Prisma.StringFilter<"Meeting"> | string
@@ -268,6 +292,8 @@ export type MeetingOrderByWithRelationInput = {
   maxParticipants?: Prisma.SortOrder
   date?: Prisma.SortOrder
   location?: Prisma.SortOrderInput | Prisma.SortOrder
+  latitude?: Prisma.SortOrderInput | Prisma.SortOrder
+  longitude?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   creatorId?: Prisma.SortOrder
@@ -286,6 +312,8 @@ export type MeetingWhereUniqueInput = Prisma.AtLeast<{
   maxParticipants?: Prisma.IntFilter<"Meeting"> | number
   date?: Prisma.DateTimeFilter<"Meeting"> | Date | string
   location?: Prisma.StringNullableFilter<"Meeting"> | string | null
+  latitude?: Prisma.FloatNullableFilter<"Meeting"> | number | null
+  longitude?: Prisma.FloatNullableFilter<"Meeting"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Meeting"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Meeting"> | Date | string
   creatorId?: Prisma.StringFilter<"Meeting"> | string
@@ -301,6 +329,8 @@ export type MeetingOrderByWithAggregationInput = {
   maxParticipants?: Prisma.SortOrder
   date?: Prisma.SortOrder
   location?: Prisma.SortOrderInput | Prisma.SortOrder
+  latitude?: Prisma.SortOrderInput | Prisma.SortOrder
+  longitude?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   creatorId?: Prisma.SortOrder
@@ -322,6 +352,8 @@ export type MeetingScalarWhereWithAggregatesInput = {
   maxParticipants?: Prisma.IntWithAggregatesFilter<"Meeting"> | number
   date?: Prisma.DateTimeWithAggregatesFilter<"Meeting"> | Date | string
   location?: Prisma.StringNullableWithAggregatesFilter<"Meeting"> | string | null
+  latitude?: Prisma.FloatNullableWithAggregatesFilter<"Meeting"> | number | null
+  longitude?: Prisma.FloatNullableWithAggregatesFilter<"Meeting"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Meeting"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Meeting"> | Date | string
   creatorId?: Prisma.StringWithAggregatesFilter<"Meeting"> | string
@@ -335,6 +367,8 @@ export type MeetingCreateInput = {
   maxParticipants?: number
   date: Date | string
   location?: string | null
+  latitude?: number | null
+  longitude?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   creator: Prisma.UserCreateNestedOneWithoutMeetingsInput
@@ -349,6 +383,8 @@ export type MeetingUncheckedCreateInput = {
   maxParticipants?: number
   date: Date | string
   location?: string | null
+  latitude?: number | null
+  longitude?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   creatorId: string
@@ -363,6 +399,8 @@ export type MeetingUpdateInput = {
   maxParticipants?: Prisma.IntFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   creator?: Prisma.UserUpdateOneRequiredWithoutMeetingsNestedInput
@@ -377,6 +415,8 @@ export type MeetingUncheckedUpdateInput = {
   maxParticipants?: Prisma.IntFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   creatorId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -391,6 +431,8 @@ export type MeetingCreateManyInput = {
   maxParticipants?: number
   date: Date | string
   location?: string | null
+  latitude?: number | null
+  longitude?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   creatorId: string
@@ -404,6 +446,8 @@ export type MeetingUpdateManyMutationInput = {
   maxParticipants?: Prisma.IntFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -416,6 +460,8 @@ export type MeetingUncheckedUpdateManyInput = {
   maxParticipants?: Prisma.IntFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   creatorId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -439,6 +485,8 @@ export type MeetingCountOrderByAggregateInput = {
   maxParticipants?: Prisma.SortOrder
   date?: Prisma.SortOrder
   location?: Prisma.SortOrder
+  latitude?: Prisma.SortOrder
+  longitude?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   creatorId?: Prisma.SortOrder
@@ -446,6 +494,8 @@ export type MeetingCountOrderByAggregateInput = {
 
 export type MeetingAvgOrderByAggregateInput = {
   maxParticipants?: Prisma.SortOrder
+  latitude?: Prisma.SortOrder
+  longitude?: Prisma.SortOrder
 }
 
 export type MeetingMaxOrderByAggregateInput = {
@@ -456,6 +506,8 @@ export type MeetingMaxOrderByAggregateInput = {
   maxParticipants?: Prisma.SortOrder
   date?: Prisma.SortOrder
   location?: Prisma.SortOrder
+  latitude?: Prisma.SortOrder
+  longitude?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   creatorId?: Prisma.SortOrder
@@ -469,6 +521,8 @@ export type MeetingMinOrderByAggregateInput = {
   maxParticipants?: Prisma.SortOrder
   date?: Prisma.SortOrder
   location?: Prisma.SortOrder
+  latitude?: Prisma.SortOrder
+  longitude?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   creatorId?: Prisma.SortOrder
@@ -476,6 +530,8 @@ export type MeetingMinOrderByAggregateInput = {
 
 export type MeetingSumOrderByAggregateInput = {
   maxParticipants?: Prisma.SortOrder
+  latitude?: Prisma.SortOrder
+  longitude?: Prisma.SortOrder
 }
 
 export type MeetingScalarRelationFilter = {
@@ -533,6 +589,14 @@ export type IntFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type NullableFloatFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type MeetingCreateNestedOneWithoutParticipantsInput = {
   create?: Prisma.XOR<Prisma.MeetingCreateWithoutParticipantsInput, Prisma.MeetingUncheckedCreateWithoutParticipantsInput>
   connectOrCreate?: Prisma.MeetingCreateOrConnectWithoutParticipantsInput
@@ -555,6 +619,8 @@ export type MeetingCreateWithoutCreatorInput = {
   maxParticipants?: number
   date: Date | string
   location?: string | null
+  latitude?: number | null
+  longitude?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   participants?: Prisma.MeetingParticipantCreateNestedManyWithoutMeetingInput
@@ -568,6 +634,8 @@ export type MeetingUncheckedCreateWithoutCreatorInput = {
   maxParticipants?: number
   date: Date | string
   location?: string | null
+  latitude?: number | null
+  longitude?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   participants?: Prisma.MeetingParticipantUncheckedCreateNestedManyWithoutMeetingInput
@@ -609,6 +677,8 @@ export type MeetingScalarWhereInput = {
   maxParticipants?: Prisma.IntFilter<"Meeting"> | number
   date?: Prisma.DateTimeFilter<"Meeting"> | Date | string
   location?: Prisma.StringNullableFilter<"Meeting"> | string | null
+  latitude?: Prisma.FloatNullableFilter<"Meeting"> | number | null
+  longitude?: Prisma.FloatNullableFilter<"Meeting"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Meeting"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Meeting"> | Date | string
   creatorId?: Prisma.StringFilter<"Meeting"> | string
@@ -622,6 +692,8 @@ export type MeetingCreateWithoutParticipantsInput = {
   maxParticipants?: number
   date: Date | string
   location?: string | null
+  latitude?: number | null
+  longitude?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   creator: Prisma.UserCreateNestedOneWithoutMeetingsInput
@@ -635,6 +707,8 @@ export type MeetingUncheckedCreateWithoutParticipantsInput = {
   maxParticipants?: number
   date: Date | string
   location?: string | null
+  latitude?: number | null
+  longitude?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   creatorId: string
@@ -664,6 +738,8 @@ export type MeetingUpdateWithoutParticipantsInput = {
   maxParticipants?: Prisma.IntFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   creator?: Prisma.UserUpdateOneRequiredWithoutMeetingsNestedInput
@@ -677,6 +753,8 @@ export type MeetingUncheckedUpdateWithoutParticipantsInput = {
   maxParticipants?: Prisma.IntFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   creatorId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -690,6 +768,8 @@ export type MeetingCreateManyCreatorInput = {
   maxParticipants?: number
   date: Date | string
   location?: string | null
+  latitude?: number | null
+  longitude?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -702,6 +782,8 @@ export type MeetingUpdateWithoutCreatorInput = {
   maxParticipants?: Prisma.IntFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   participants?: Prisma.MeetingParticipantUpdateManyWithoutMeetingNestedInput
@@ -715,6 +797,8 @@ export type MeetingUncheckedUpdateWithoutCreatorInput = {
   maxParticipants?: Prisma.IntFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   participants?: Prisma.MeetingParticipantUncheckedUpdateManyWithoutMeetingNestedInput
@@ -728,6 +812,8 @@ export type MeetingUncheckedUpdateManyWithoutCreatorInput = {
   maxParticipants?: Prisma.IntFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -771,6 +857,8 @@ export type MeetingSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   maxParticipants?: boolean
   date?: boolean
   location?: boolean
+  latitude?: boolean
+  longitude?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   creatorId?: boolean
@@ -787,6 +875,8 @@ export type MeetingSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   maxParticipants?: boolean
   date?: boolean
   location?: boolean
+  latitude?: boolean
+  longitude?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   creatorId?: boolean
@@ -801,6 +891,8 @@ export type MeetingSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   maxParticipants?: boolean
   date?: boolean
   location?: boolean
+  latitude?: boolean
+  longitude?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   creatorId?: boolean
@@ -815,12 +907,14 @@ export type MeetingSelectScalar = {
   maxParticipants?: boolean
   date?: boolean
   location?: boolean
+  latitude?: boolean
+  longitude?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   creatorId?: boolean
 }
 
-export type MeetingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "category" | "maxParticipants" | "date" | "location" | "createdAt" | "updatedAt" | "creatorId", ExtArgs["result"]["meeting"]>
+export type MeetingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "category" | "maxParticipants" | "date" | "location" | "latitude" | "longitude" | "createdAt" | "updatedAt" | "creatorId", ExtArgs["result"]["meeting"]>
 export type MeetingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   creator?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   participants?: boolean | Prisma.Meeting$participantsArgs<ExtArgs>
@@ -847,6 +941,8 @@ export type $MeetingPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     maxParticipants: number
     date: Date
     location: string | null
+    latitude: number | null
+    longitude: number | null
     createdAt: Date
     updatedAt: Date
     creatorId: string
@@ -1282,6 +1378,8 @@ export interface MeetingFieldRefs {
   readonly maxParticipants: Prisma.FieldRef<"Meeting", 'Int'>
   readonly date: Prisma.FieldRef<"Meeting", 'DateTime'>
   readonly location: Prisma.FieldRef<"Meeting", 'String'>
+  readonly latitude: Prisma.FieldRef<"Meeting", 'Float'>
+  readonly longitude: Prisma.FieldRef<"Meeting", 'Float'>
   readonly createdAt: Prisma.FieldRef<"Meeting", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Meeting", 'DateTime'>
   readonly creatorId: Prisma.FieldRef<"Meeting", 'String'>

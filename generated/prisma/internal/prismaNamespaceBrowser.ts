@@ -90,6 +90,8 @@ export const MeetingScalarFieldEnum = {
   maxParticipants: 'maxParticipants',
   date: 'date',
   location: 'location',
+  latitude: 'latitude',
+  longitude: 'longitude',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   creatorId: 'creatorId'

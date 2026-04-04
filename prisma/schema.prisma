@@ -30,6 +30,8 @@ model Meeting {
   maxParticipants Int @default(10)
   date        DateTime
   location    String?
+  latitude    Float?
+  longitude   Float?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   creatorId   String

@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { format } from "date-fns"
 import { ko } from "date-fns/locale"
-import { Calendar, MapPin, Users } from "lucide-react"
+import { Calendar, MapPin, Users, Navigation } from "lucide-react"
 
 import {
   Card,
@@ -25,6 +25,7 @@ interface MeetingCardProps {
     _count?: {
       participants: number
     }
+    distance?: number
   }
 }
 
@@ -58,6 +59,16 @@ export function MeetingCard({ meeting }: MeetingCardProps) {
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4" />
             <span className="line-clamp-1">{meeting.location}</span>
+          </div>
+        )}
+        {meeting.distance !== undefined && (
+          <div className="flex items-center gap-2 text-primary-600">
+            <Navigation className="w-4 h-4" />
+            <span>
+              {meeting.distance < 1
+                ? `${Math.round(meeting.distance * 1000)}m`
+                : `${meeting.distance.toFixed(1)}km`}
+            </span>
           </div>
         )}
       </CardContent>
