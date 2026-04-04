@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { calculateDistanceInKm } from "@/lib/location"
-import { MeetingFilter } from "./components/meetings/MeetingFilter"
-import { MeetingViewToggle } from "./components/meetings/MeetingViewToggle"
+import { MeetingLayout } from "./components/meetings/MeetingLayout"
 
 export const dynamic = "force-dynamic"
 
@@ -62,21 +61,5 @@ export default async function HomePage({
       .sort((a, b) => (a.distance || 0) - (b.distance || 0))
   }
 
-  return (
-    <div className="flex flex-col h-[calc(100vh-8rem)]">
-      <div className="flex-none mb-4">
-        <h1 className="text-2xl font-bold tracking-tight">모임 찾기</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          관심있는 모임을 찾고 참여하세요.
-        </p>
-      </div>
-
-      <div className="flex-none mb-4">
-        <MeetingFilter />
-      </div>
-      <div className="flex-1 min-h-0">
-        <MeetingViewToggle meetings={meetings} />
-      </div>
-    </div>
-  )
+  return <MeetingLayout meetings={meetings} />
 }
