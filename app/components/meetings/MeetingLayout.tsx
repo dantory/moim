@@ -10,7 +10,7 @@ import { MeetingMapView } from "./MeetingMapView";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { Calendar, MapPin as MapPinIcon, Users } from "lucide-react";
+import { Calendar, MapPin as MapPinIcon, Users, ChevronRight } from "lucide-react";
 
 const CATEGORIES = [
   { id: "전체", label: "전체" },
@@ -58,6 +58,8 @@ export function MeetingLayout({ meetings }: MeetingLayoutProps) {
   const [search, setSearch] = React.useState(currentSearch);
   const [isLocating, setIsLocating] = React.useState(false);
   const [viewMode, setViewMode] = React.useState<"list" | "map">("map");
+  const [selectedMeetingId, setSelectedMeetingId] = React.useState<string | null>(null);
+  const mapPanRef = React.useRef<(lat: number, lng: number) => void>(undefined);
 
   const handleCategoryChange = (category: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -213,7 +215,12 @@ export function MeetingLayout({ meetings }: MeetingLayoutProps) {
           <div className="flex-1 min-h-0 relative">
             {viewMode === "map" ? (
               <div className="absolute inset-0">
-                <MeetingMapView meetings={meetings} />
+                <MeetingMapView
+                  meetings={meetings}
+                  selectedId={selectedMeetingId}
+                  onMarkerClick={setSelectedMeetingId}
+                  onMapReady={(pan) => { mapPanRef.current = pan; }}
+                />
                 <div className="absolute bottom-4 left-4 right-4 bg-background/95 backdrop-blur-sm border rounded-xl shadow-xl max-h-[200px]">
                   <div className="px-3 py-2 border-b">
                     <span className="text-sm font-medium">모임 목록</span>
@@ -221,10 +228,15 @@ export function MeetingLayout({ meetings }: MeetingLayoutProps) {
                   <div className="p-3 overflow-x-auto">
                     <div className="flex gap-2" style={{ minWidth: "max-content" }}>
                       {meetings.map((meeting) => (
-                        <Link
+                        <button
                           key={meeting.id}
-                          href={`/meetings/${meeting.id}`}
-                          className="w-[180px] shrink-0 bg-card border rounded-lg p-2.5 hover:shadow-md transition-shadow"
+                          onClick={() => setSelectedMeetingId(meeting.id)}
+                          className={cn(
+                            "w-[180px] shrink-0 bg-card border rounded-lg p-2.5 transition-all text-left",
+                            selectedMeetingId === meeting.id
+                              ? "ring-2 ring-primary shadow-md"
+                              : "hover:shadow-md hover:border-primary/50"
+                          )}
                         >
                           <div className="flex items-center justify-between mb-1">
                             <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-primary-100 text-primary-800">
@@ -248,7 +260,7 @@ export function MeetingLayout({ meetings }: MeetingLayoutProps) {
                               </div>
                             )}
                           </div>
-                        </Link>
+                        </button>
                       ))}
                     </div>
                   </div>

@@ -27,6 +27,7 @@ interface MeetingMapViewProps {
   }>;
   selectedId?: string | null;
   onMarkerClick?: (id: string) => void;
+  onMapReady?: (panTo: (lat: number, lng: number) => void) => void;
 }
 
 const mapContainerStyle = {
@@ -39,11 +40,22 @@ const defaultCenter = {
   lng: 126.978,
 };
 
-export function MeetingMapView({ meetings, selectedId, onMarkerClick }: MeetingMapViewProps) {
+export function MeetingMapView({ meetings, selectedId, onMarkerClick, onMapReady }: MeetingMapViewProps) {
   const { isLoaded } = useGoogleMapsLoader();
   const mapRef = React.useRef<google.maps.Map | null>(null);
   const markersRef = React.useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
   const [selectedMeeting, setSelectedMeeting] = React.useState<typeof meetings[0] | null>(null);
+
+  const panTo = React.useCallback((lat: number, lng: number) => {
+    if (mapRef.current) {
+      mapRef.current.panTo({ lat, lng });
+      mapRef.current.setZoom(16);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    onMapReady?.(panTo);
+  }, [onMapReady, panTo]);
 
   const meetingsWithLocation = meetings.filter(
     (m): m is typeof m & { latitude: number; longitude: number } =>
@@ -95,10 +107,13 @@ export function MeetingMapView({ meetings, selectedId, onMarkerClick }: MeetingM
     if (selectedId) {
       const meeting = meetingsWithLocation.find(m => m.id === selectedId);
       setSelectedMeeting(meeting || null);
+      if (meeting) {
+        panTo(meeting.latitude, meeting.longitude);
+      }
     } else {
       setSelectedMeeting(null);
     }
-  }, [selectedId, meetingsWithLocation]);
+  }, [selectedId, meetingsWithLocation, panTo]);
 
   if (!isLoaded) {
     return (
