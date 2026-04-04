@@ -181,7 +181,12 @@ export function LocationPicker({
                 placeholder="주소 검색..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && searchAddress()}
+                onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  searchAddress();
+                }
+              }}
               />
               <Button
                 type="button"
