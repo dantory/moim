@@ -63,6 +63,7 @@ export function MeetingMapView({ meetings, selectedId, onMarkerClick }: MeetingM
 
   React.useEffect(() => {
     if (!isLoaded || !mapRef.current) return;
+    if (!google.maps.marker?.AdvancedMarkerElement) return;
 
     const map = mapRef.current;
 
