@@ -64,11 +64,11 @@ export function MeetingViewToggle({ meetings }: MeetingViewToggleProps) {
           <MeetingMapView meetings={meetings} />
           <div
             className={cn(
-              "absolute bottom-4 left-4 right-4 bg-background/95 backdrop-blur-sm border rounded-xl shadow-xl transition-all duration-300 z-10",
+              "absolute bottom-4 left-4 right-4 bg-background/95 backdrop-blur-sm border rounded-xl shadow-xl transition-all duration-300 z-10 max-h-[180px]",
               isListPanelOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-full pointer-events-none"
             )}
           >
-            <div className="flex items-center justify-between px-4 py-2 border-b">
+            <div className="flex items-center justify-between px-3 py-1.5 border-b">
               <span className="text-sm font-medium">모임 목록 ({meetings.length}개)</span>
               <button
                 onClick={() => setIsListPanelOpen(false)}
@@ -78,15 +78,15 @@ export function MeetingViewToggle({ meetings }: MeetingViewToggleProps) {
               </button>
             </div>
 
-            <div className="p-4 overflow-x-auto">
+            <div className="p-2 overflow-x-auto">
               {meetings.length === 0 ? (
-                <p className="text-center text-muted-foreground text-sm py-4">
+                <p className="text-center text-muted-foreground text-sm py-1">
                   모임이 없습니다
                 </p>
               ) : (
-                <div className="flex gap-3" style={{ minWidth: "max-content" }}>
+                <div className="flex gap-2" style={{ minWidth: "max-content" }}>
                   {meetings.map((meeting) => (
-                    <div key={meeting.id} className="w-[280px] shrink-0">
+                    <div key={meeting.id} className="w-[180px] shrink-0">
                       <MeetingCard meeting={meeting} />
                     </div>
                   ))}
