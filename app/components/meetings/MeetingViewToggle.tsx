@@ -29,7 +29,7 @@ interface MeetingViewToggleProps {
 }
 
 export function MeetingViewToggle({ meetings }: MeetingViewToggleProps) {
-  const [viewMode, setViewMode] = React.useState<"list" | "map">("list");
+  const [viewMode, setViewMode] = React.useState<"list" | "map">("map");
   const [isListPanelOpen, setIsListPanelOpen] = React.useState(true);
 
   return (
