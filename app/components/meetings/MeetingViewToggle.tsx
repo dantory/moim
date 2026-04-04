@@ -62,41 +62,48 @@ export function MeetingViewToggle({ meetings }: MeetingViewToggleProps) {
       ) : (
         <div className="relative">
           <MeetingMapView meetings={meetings} />
-          <div 
+          <div
             className={cn(
-              "absolute bottom-0 left-0 right-0 bg-background border-t rounded-t-lg shadow-lg transition-transform duration-300 z-10",
-              isListPanelOpen ? "translate-y-0" : "translate-y-[calc(100%-40px)]"
+              "absolute bottom-4 left-4 right-4 bg-background/95 backdrop-blur-sm border rounded-xl shadow-xl transition-all duration-300 z-10",
+              isListPanelOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-full pointer-events-none"
             )}
           >
-            <button
-              onClick={() => setIsListPanelOpen(!isListPanelOpen)}
-              className="w-full flex items-center justify-center py-2 border-b hover:bg-muted transition-colors"
-            >
-              {isListPanelOpen ? (
-                <>
-                  <ChevronDown className="h-4 w-4 mr-1" />
-                  <span className="text-xs">목록 접기</span>
-                </>
-              ) : (
-                <>
-                  <ChevronUp className="h-4 w-4 mr-1" />
-                  <span className="text-xs">목록 보기 ({meetings.length}개)</span>
-                </>
-              )}
-            </button>
-            
-            <div className="max-h-[300px] overflow-y-auto p-4 space-y-3">
+            <div className="flex items-center justify-between px-4 py-2 border-b">
+              <span className="text-sm font-medium">모임 목록 ({meetings.length}개)</span>
+              <button
+                onClick={() => setIsListPanelOpen(false)}
+                className="p-1 hover:bg-muted rounded transition-colors"
+              >
+                <ChevronDown className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="p-4 overflow-x-auto">
               {meetings.length === 0 ? (
                 <p className="text-center text-muted-foreground text-sm py-4">
                   모임이 없습니다
                 </p>
               ) : (
-                meetings.map((meeting) => (
-                  <MeetingCard key={meeting.id} meeting={meeting} />
-                ))
+                <div className="flex gap-3" style={{ minWidth: "max-content" }}>
+                  {meetings.map((meeting) => (
+                    <div key={meeting.id} className="w-[280px] shrink-0">
+                      <MeetingCard meeting={meeting} />
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </div>
+
+          {!isListPanelOpen && (
+            <button
+              onClick={() => setIsListPanelOpen(true)}
+              className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/95 backdrop-blur-sm border rounded-full shadow-lg px-4 py-2 flex items-center gap-2 hover:bg-muted transition-colors z-10"
+            >
+              <ChevronUp className="h-4 w-4" />
+              <span className="text-sm">목록 보기 ({meetings.length}개)</span>
+            </button>
+          )}
         </div>
       )}
     </div>

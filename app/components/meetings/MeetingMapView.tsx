@@ -31,7 +31,7 @@ interface MeetingMapViewProps {
 
 const mapContainerStyle = {
   width: "100%",
-  height: "600px",
+  height: "75vh",
 };
 
 const defaultCenter = {
