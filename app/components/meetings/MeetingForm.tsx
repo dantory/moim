@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
+import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 
@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/Card"
+import { DateTimePicker } from "../ui/DateTimePicker"
 
 const CATEGORIES = ["스터디", "친목", "운동", "취미", "기타"]
 
@@ -22,7 +23,7 @@ const meetingSchema = z.object({
   description: z.string().optional(),
   category: z.string().min(1, "카테고리를 선택해주세요."),
   maxParticipants: z.number().min(2, "최소 2명 이상이어야 합니다.").max(100, "최대 100명까지 가능합니다."),
-  date: z.string().min(1, "날짜를 선택해주세요."),
+  date: z.date().min(new Date(), "과거 날짜는 선택할 수 없습니다."),
   location: z.string().optional(),
 })
 
@@ -46,25 +47,28 @@ export function MeetingForm({ initialData, isEditing }: MeetingFormProps) {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const defaultValues = initialData
+  const defaultValues: MeetingValues = initialData
     ? {
-        ...initialData,
+        title: initialData.title,
         description: initialData.description || undefined,
         location: initialData.location || undefined,
-        date: new Date(initialData.date).toISOString().slice(0, 16),
+        category: initialData.category,
+        maxParticipants: initialData.maxParticipants,
+        date: new Date(initialData.date),
       }
     : {
         title: "",
         description: "",
         category: "스터디",
         maxParticipants: 10,
-        date: "",
+        date: new Date(),
         location: "",
       }
 
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<MeetingValues>({
     resolver: zodResolver(meetingSchema),
@@ -86,7 +90,7 @@ export function MeetingForm({ initialData, isEditing }: MeetingFormProps) {
         },
         body: JSON.stringify({
           ...data,
-          date: new Date(data.date).toISOString(),
+          date: data.date.toISOString(),
         }),
       })
 
@@ -161,10 +165,17 @@ export function MeetingForm({ initialData, isEditing }: MeetingFormProps) {
               <label htmlFor="date" className="text-sm font-medium">
                 일시 <span className="text-destructive">*</span>
               </label>
-              <Input
-                id="date"
-                type="datetime-local"
-                {...register("date")}
+              <Controller
+                name="date"
+                control={control}
+                render={({ field }) => (
+                  <DateTimePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="날짜와 시간을 선택하세요"
+                    minDate={new Date()}
+                  />
+                )}
               />
               {errors.date && (
                 <p className="text-sm text-destructive">{errors.date.message}</p>
