@@ -67,7 +67,7 @@ export default async function HomePage({
       <div>
         <h1 className="text-3xl font-bold tracking-tight">모임 찾기</h1>
         <p className="text-muted-foreground mt-2">
-          관심있는 모임을 찾고 참여핳세요.
+          관심있는 모임을 찾고 참여하세요.
         </p>
       </div>
 

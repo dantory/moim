@@ -5,8 +5,11 @@ import { List, Map, ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from "../ui/Button";
 import { MeetingList } from "./MeetingList";
 import { MeetingMapView } from "./MeetingMapView";
-import { MeetingCard } from "./MeetingCard";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+import { Calendar, MapPin, Users } from "lucide-react";
 
 interface MeetingWithLocation {
   id: string;
@@ -86,9 +89,34 @@ export function MeetingViewToggle({ meetings }: MeetingViewToggleProps) {
               ) : (
                 <div className="flex gap-2" style={{ minWidth: "max-content" }}>
                   {meetings.map((meeting) => (
-                    <div key={meeting.id} className="w-[180px] shrink-0">
-                      <MeetingCard meeting={meeting} />
-                    </div>
+                    <Link
+                      key={meeting.id}
+                      href={`/meetings/${meeting.id}`}
+                      className="w-[160px] shrink-0 bg-card border rounded-lg p-2 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-primary-100 text-primary-800">
+                          {meeting.category}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                          <Users className="w-3 h-3" />
+                          {meeting._count?.participants || 0}/{meeting.maxParticipants}
+                        </span>
+                      </div>
+                      <h4 className="font-medium text-sm line-clamp-1 mb-1">{meeting.title}</h4>
+                      <div className="space-y-0.5 text-[10px] text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {format(new Date(meeting.date), "MM/dd HH:mm", { locale: ko })}
+                        </div>
+                        {meeting.location && (
+                          <div className="flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            <span className="line-clamp-1">{meeting.location}</span>
+                          </div>
+                        )}
+                      </div>
+                    </Link>
                   ))}
                 </div>
               )}
