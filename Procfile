@@ -1,1 +1,1 @@
-web: npm run start -- -p ${PORT:-3000}
+web: node .next/standalone/server.js
