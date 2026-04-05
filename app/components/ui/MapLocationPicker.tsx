@@ -5,7 +5,6 @@ import { X, MapPin, Search } from "lucide-react";
 import { GoogleMap, Marker } from "@react-google-maps/api";
 import { Button } from "./Button";
 import { Input } from "./Input";
-import { cn } from "@/lib/utils";
 import { useGoogleMapsLoader } from "@/lib/google-maps";
 
 interface MapLocationPickerProps {

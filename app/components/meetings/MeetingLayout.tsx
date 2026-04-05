@@ -10,7 +10,7 @@ import { MeetingMapView } from "./MeetingMapView";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { Calendar, MapPin as MapPinIcon, Users, ChevronRight } from "lucide-react";
+import { Calendar, MapPin as MapPinIcon, Users } from "lucide-react";
 
 const CATEGORIES = [
   { id: "전체", label: "전체" },
@@ -46,9 +46,10 @@ interface MeetingWithLocation {
 
 interface MeetingLayoutProps {
   meetings: MeetingWithLocation[];
+  errorMessage?: string;
 }
 
-export function MeetingLayout({ meetings }: MeetingLayoutProps) {
+export function MeetingLayout({ meetings, errorMessage }: MeetingLayoutProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -212,9 +213,15 @@ export function MeetingLayout({ meetings }: MeetingLayoutProps) {
             </div>
           </div>
 
-          <div className="flex-1 min-h-0 relative">
-            {viewMode === "map" ? (
-              <div className="absolute inset-0">
+          <div className="flex-1 min-h-0 flex flex-col">
+            {errorMessage ? (
+              <div className="mx-4 mt-4 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                {errorMessage}
+              </div>
+            ) : null}
+            <div className="relative flex-1 min-h-0">
+              {viewMode === "map" ? (
+                <div className="absolute inset-0">
                 <MeetingMapView
                   meetings={meetings}
                   selectedId={selectedMeetingId}
@@ -265,9 +272,9 @@ export function MeetingLayout({ meetings }: MeetingLayoutProps) {
                     </div>
                   </div>
                 </div>
-              </div>
-            ) : (
-              <div className="h-full overflow-y-auto p-4">
+                </div>
+              ) : (
+                <div className="h-full overflow-y-auto p-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
                   {meetings.map((meeting) => (
                     <Link
@@ -303,8 +310,9 @@ export function MeetingLayout({ meetings }: MeetingLayoutProps) {
                     </Link>
                   ))}
                 </div>
-              </div>
-            )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
