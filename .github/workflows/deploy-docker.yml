@@ -92,10 +92,22 @@ jobs:
 
     - name: Create EB deployment package
       run: |
+        echo "Current directory: $(pwd)"
+        echo "Files in current directory:"
+        ls -la
+        echo ""
+        echo "Checking for Dockerrun.aws.json:"
+        ls -la Dockerrun.aws.json || echo "Dockerrun file not found!"
+        echo ""
         mkdir -p deploy
         cp Dockerrun.aws.json deploy/
+        echo "Files in deploy directory:"
+        ls -la deploy/
         cd deploy
         zip -r ../deploy.zip .
+        echo ""
+        echo "Contents of deploy.zip:"
+        unzip -l ../deploy.zip
 
     - name: Deploy to Elastic Beanstalk
       uses: einaregilsson/beanstalk-deploy@v22
