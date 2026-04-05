@@ -68,6 +68,7 @@ jobs:
       run: |
         mkdir -p deploy
         cp -r .next deploy/
+        cp -r .platform deploy/
         cp -r generated deploy/
         cp -r prisma deploy/
         cp .npmrc deploy/
