@@ -1,0 +1,39 @@
+# Git
+.git/
+.gitignore
+
+# Development
+.env
+.env.local
+.env.*.local
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+coverage/
+.nyc_output/
+
+# Documentation
+README.md
+DEPLOY.md
+
+# Cache
+.next/cache/
+*.tsbuildinfo
+
+# Local DB
+dev.db
+*.db
+
+# SSL certificates
+*.pem
+*.key
+
+# OS
+.DS_Store
+Thumbs.db
