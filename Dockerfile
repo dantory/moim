@@ -8,14 +8,13 @@ ARG DATABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-# Set environment variables for build
+# Set environment variables for build (NODE_ENV will be set later)
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
 ENV DATABASE_URL=$DATABASE_URL
 ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
 ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-# Install dependencies
+# Install dependencies (including devDependencies)
 COPY package*.json ./
 COPY .npmrc ./
 RUN npm ci --legacy-peer-deps
@@ -30,6 +29,7 @@ RUN npx prisma generate
 COPY . .
 
 # Build Next.js
+ENV NODE_ENV=production
 RUN npm run build
 
 # Production stage
