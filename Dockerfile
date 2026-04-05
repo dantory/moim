@@ -3,6 +3,18 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Accept build arguments
+ARG DATABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+# Set environment variables for build
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+ENV DATABASE_URL=$DATABASE_URL
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
+
 # Install dependencies
 COPY package*.json ./
 COPY .npmrc ./
@@ -18,8 +30,6 @@ RUN npx prisma generate
 COPY . .
 
 # Build Next.js
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
 RUN npm run build
 
 # Production stage
