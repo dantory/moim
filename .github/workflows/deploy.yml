@@ -47,9 +47,8 @@ jobs:
       run: |
         mkdir -p deploy
         cp -r .next deploy/
-        cp -r node_modules deploy/
         cp -r prisma deploy/
-        cp .npmrc deploy/ 2>/dev/null || true
+        cp .npmrc deploy/
         cp package*.json deploy/
         cp Procfile deploy/
         cp -r public deploy/ 2>/dev/null || true
