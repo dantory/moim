@@ -12,7 +12,10 @@ export async function GET(req: Request) {
   }
 
   try {
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+    const apiKey =
+      process.env.GOOGLE_MAPS_SERVER_API_KEY ||
+      process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+
     if (!apiKey) {
       return NextResponse.json(
         { error: "API 키가 설정되지 않았습니다" },
