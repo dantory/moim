@@ -73,6 +73,8 @@ jobs:
       run: |
         mkdir -p deploy
         cp -r .next deploy/
+        mkdir -p deploy/.next/standalone/.next
+        cp -r .next/static deploy/.next/standalone/.next/static
         cp -r .platform deploy/
         cp -r prisma deploy/
         cp .npmrc deploy/
@@ -80,6 +82,7 @@ jobs:
         cp next.config.ts deploy/
         cp Procfile deploy/
         cp -r public deploy/ 2>/dev/null || true
+        cp -r public deploy/.next/standalone/ 2>/dev/null || true
         cd deploy
         zip -r ../deploy.zip .
 
