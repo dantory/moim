@@ -73,18 +73,43 @@ jobs:
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}-${{ github.run_number }}
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+        NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
       run: |
-        cat > Dockerrun.aws.json << EOF
+        cat > Dockerrun.aws.json << 'EOF'
         {
           "AWSEBDockerrunVersion": "1",
           "Image": {
-            "Name": "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG",
+            "Name": "${{ steps.login-ecr.outputs.registry }}/moim-app:${{ github.sha }}-${{ github.run_number }}",
             "Update": "true"
           },
           "Ports": [
             {
               "ContainerPort": "8080",
               "HostPort": "8080"
+            }
+          ],
+          "Environment": [
+            {
+              "Name": "NODE_ENV",
+              "Value": "production"
+            },
+            {
+              "Name": "PORT",
+              "Value": "8080"
+            },
+            {
+              "Name": "DATABASE_URL",
+              "Value": "${{ secrets.DATABASE_URL }}"
+            },
+            {
+              "Name": "NEXTAUTH_SECRET",
+              "Value": "${{ secrets.NEXTAUTH_SECRET }}"
+            },
+            {
+              "Name": "NEXTAUTH_URL",
+              "Value": "${{ secrets.NEXTAUTH_URL }}"
             }
           ]
         }
