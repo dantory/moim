@@ -1,13 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { GoogleMap, InfoWindow } from "@react-google-maps/api";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { GoogleMap, InfoWindow, Marker } from "@react-google-maps/api";
 import Link from "next/link";
 import { MapPin, Users, Calendar } from "lucide-react";
 import { Button } from "../ui/Button";
 import { useGoogleMapsLoader } from "@/lib/google-maps";
+import { formatMeetingDateShort } from "@/lib/date-format";
 
 interface MeetingMapViewProps {
   meetings: Array<{
@@ -43,7 +42,6 @@ const defaultCenter = {
 export function MeetingMapView({ meetings, selectedId, onMarkerClick, onMapReady }: MeetingMapViewProps) {
   const { isLoaded } = useGoogleMapsLoader();
   const mapRef = React.useRef<google.maps.Map | null>(null);
-  const markersRef = React.useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
   const [selectedMeeting, setSelectedMeeting] = React.useState<typeof meetings[0] | null>(null);
 
   const panTo = React.useCallback((lat: number, lng: number) => {
@@ -72,36 +70,6 @@ export function MeetingMapView({ meetings, selectedId, onMarkerClick, onMapReady
       mapRef.current.fitBounds(bounds, 50);
     }
   }, [meetingsWithLocation]);
-
-  React.useEffect(() => {
-    if (!isLoaded || !mapRef.current) return;
-    if (!google.maps.marker?.AdvancedMarkerElement) return;
-
-    const map = mapRef.current;
-
-    markersRef.current.forEach(marker => marker.map = null);
-    markersRef.current = [];
-
-    meetingsWithLocation.forEach((meeting) => {
-      const marker = new google.maps.marker.AdvancedMarkerElement({
-        map,
-        position: { lat: meeting.latitude, lng: meeting.longitude },
-        title: meeting.title,
-      });
-
-      marker.addListener("click", () => {
-        setSelectedMeeting(meeting);
-        onMarkerClick?.(meeting.id);
-      });
-
-      markersRef.current.push(marker);
-    });
-
-    return () => {
-      markersRef.current.forEach(marker => marker.map = null);
-      markersRef.current = [];
-    };
-  }, [isLoaded, meetingsWithLocation, onMarkerClick]);
 
   React.useEffect(() => {
     if (selectedId) {
@@ -151,9 +119,19 @@ export function MeetingMapView({ meetings, selectedId, onMarkerClick, onMapReady
             streetViewControl: false,
             mapTypeControl: false,
             fullscreenControl: true,
-            mapId: process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID,
           }}
         >
+          {meetingsWithLocation.map((meeting) => (
+            <Marker
+              key={meeting.id}
+              position={{ lat: meeting.latitude, lng: meeting.longitude }}
+              title={meeting.title}
+              onClick={() => {
+                setSelectedMeeting(meeting);
+                onMarkerClick?.(meeting.id);
+              }}
+            />
+          ))}
           {selectedMeeting && (
             <InfoWindow
               position={{ lat: selectedMeeting.latitude!, lng: selectedMeeting.longitude! }}
@@ -173,7 +151,7 @@ export function MeetingMapView({ meetings, selectedId, onMarkerClick, onMapReady
                 <div className="space-y-1 text-xs text-muted-foreground mb-3">
                   <div className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
-                    {format(new Date(selectedMeeting.date), "MM/dd HH:mm", { locale: ko })}
+                    {formatMeetingDateShort(selectedMeeting.date)}
                   </div>
                   <div className="flex items-center gap-1">
                     <Users className="h-3 w-3" />

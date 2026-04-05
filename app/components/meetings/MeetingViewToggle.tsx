@@ -8,9 +8,8 @@ import { MeetingList } from "./MeetingList";
 import { MeetingMapView } from "./MeetingMapView";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
 import { Calendar, MapPin, Users } from "lucide-react";
+import { formatMeetingDateShort } from "@/lib/date-format";
 
 interface MeetingWithLocation {
   id: string;
@@ -206,7 +205,7 @@ export function MeetingViewToggle({ meetings }: MeetingViewToggleProps) {
                       <div className="space-y-0.5 text-[10px] text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
-                          {format(new Date(meeting.date), "MM/dd HH:mm", { locale: ko })}
+                          {formatMeetingDateShort(meeting.date)}
                         </div>
                         {meeting.location && (
                           <div className="flex items-center gap-1">

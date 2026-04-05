@@ -1,7 +1,6 @@
 import Link from "next/link"
-import { format } from "date-fns"
-import { ko } from "date-fns/locale"
 import { Calendar, MapPin, Users, Navigation } from "lucide-react"
+import { formatMeetingDateLong } from "@/lib/date-format"
 
 import {
   Card,
@@ -30,7 +29,6 @@ interface MeetingCardProps {
 }
 
 export function MeetingCard({ meeting }: MeetingCardProps) {
-  const date = new Date(meeting.date)
   const isFull = meeting._count?.participants === meeting.maxParticipants
 
   return (
@@ -53,7 +51,7 @@ export function MeetingCard({ meeting }: MeetingCardProps) {
       <CardContent className="flex-1 space-y-2 text-sm text-muted-foreground">
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4" />
-          <span>{format(date, "PPP p", { locale: ko })}</span>
+          <span>{formatMeetingDateLong(meeting.date)}</span>
         </div>
         {meeting.location && (
           <div className="flex items-center gap-2">

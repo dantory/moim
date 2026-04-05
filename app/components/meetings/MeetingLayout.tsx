@@ -8,9 +8,8 @@ import { Button } from "../ui/Button";
 import { cn } from "@/lib/utils";
 import { MeetingMapView } from "./MeetingMapView";
 import Link from "next/link";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
 import { Calendar, MapPin as MapPinIcon, Users } from "lucide-react";
+import { formatMeetingDateLong, formatMeetingDateShort } from "@/lib/date-format";
 
 const CATEGORIES = [
   { id: "전체", label: "전체" },
@@ -258,7 +257,7 @@ export function MeetingLayout({ meetings, errorMessage }: MeetingLayoutProps) {
                           <div className="text-[10px] text-muted-foreground space-y-0.5">
                             <div className="flex items-center gap-1">
                               <Calendar className="w-3 h-3" />
-                              {format(new Date(meeting.date), "MM/dd HH:mm", { locale: ko })}
+                              {formatMeetingDateShort(meeting.date)}
                             </div>
                             {meeting.location && (
                               <div className="flex items-center gap-1">
@@ -298,7 +297,7 @@ export function MeetingLayout({ meetings, errorMessage }: MeetingLayoutProps) {
                       <div className="text-xs text-muted-foreground space-y-1">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3.5 h-3.5" />
-                          {format(new Date(meeting.date), "PPP p", { locale: ko })}
+                          {formatMeetingDateLong(meeting.date)}
                         </div>
                         {meeting.location && (
                           <div className="flex items-center gap-1">
