@@ -2,9 +2,10 @@
 set -euo pipefail
 
 cd /var/app/current
-set -a
-source /opt/elasticbeanstalk/deployment/env 2>/dev/null || true
-set +a
+
+if [ -x /opt/elasticbeanstalk/bin/get-config ]; then
+  export DATABASE_URL=$(/opt/elasticbeanstalk/bin/get-config environment -k DATABASE_URL)
+fi
 
 echo "Applying Prisma migrations..."
 npx prisma migrate deploy
