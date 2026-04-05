@@ -19,8 +19,8 @@ const config: runtime.GetPrismaClientConfig = {
   "previewFeatures": [],
   "clientVersion": "7.6.0",
   "engineVersion": "75cbdc1eb7150937890ad5465d861175c6624711",
-  "activeProvider": "sqlite",
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"sqlite\"\n}\n\nmodel User {\n  id             String               @id @default(cuid())\n  email          String               @unique\n  name           String?\n  password       String\n  image          String?\n  createdAt      DateTime             @default(now())\n  updatedAt      DateTime             @updatedAt\n  meetings       Meeting[]\n  participations MeetingParticipant[]\n}\n\nmodel Meeting {\n  id              String               @id @default(cuid())\n  title           String\n  description     String?\n  category        String\n  maxParticipants Int                  @default(10)\n  date            DateTime\n  location        String?\n  latitude        Float?\n  longitude       Float?\n  createdAt       DateTime             @default(now())\n  updatedAt       DateTime             @updatedAt\n  creatorId       String\n  creator         User                 @relation(fields: [creatorId], references: [id])\n  participants    MeetingParticipant[]\n}\n\nmodel MeetingParticipant {\n  id        String   @id @default(cuid())\n  meetingId String\n  userId    String\n  joinedAt  DateTime @default(now())\n  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)\n  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@unique([meetingId, userId])\n}\n",
+  "activeProvider": "postgresql",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel User {\n  id             String               @id @default(cuid())\n  email          String               @unique\n  name           String?\n  password       String\n  image          String?\n  createdAt      DateTime             @default(now())\n  updatedAt      DateTime             @updatedAt\n  meetings       Meeting[]\n  participations MeetingParticipant[]\n}\n\nmodel Meeting {\n  id              String               @id @default(cuid())\n  title           String\n  description     String?\n  category        String\n  maxParticipants Int                  @default(10)\n  date            DateTime\n  location        String?\n  latitude        Float?\n  longitude       Float?\n  createdAt       DateTime             @default(now())\n  updatedAt       DateTime             @updatedAt\n  creatorId       String\n  creator         User                 @relation(fields: [creatorId], references: [id])\n  participants    MeetingParticipant[]\n}\n\nmodel MeetingParticipant {\n  id        String   @id @default(cuid())\n  meetingId String\n  userId    String\n  joinedAt  DateTime @default(now())\n  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)\n  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@unique([meetingId, userId])\n}\n",
   "runtimeDataModel": {
     "models": {},
     "enums": {},
@@ -45,10 +45,10 @@ async function decodeBase64AsWasm(wasmBase64: string): Promise<WebAssembly.Modul
 }
 
 config.compilerWasm = {
-  getRuntime: async () => await import("@prisma/client/runtime/query_compiler_fast_bg.sqlite.mjs"),
+  getRuntime: async () => await import("@prisma/client/runtime/query_compiler_fast_bg.postgresql.mjs"),
 
   getQueryCompilerWasmModule: async () => {
-    const { wasm } = await import("@prisma/client/runtime/query_compiler_fast_bg.sqlite.wasm-base64.mjs")
+    const { wasm } = await import("@prisma/client/runtime/query_compiler_fast_bg.postgresql.wasm-base64.mjs")
     return await decodeBase64AsWasm(wasm)
   },
 

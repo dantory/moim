@@ -648,6 +648,7 @@ export type MeetingCreateOrConnectWithoutCreatorInput = {
 
 export type MeetingCreateManyCreatorInputEnvelope = {
   data: Prisma.MeetingCreateManyCreatorInput | Prisma.MeetingCreateManyCreatorInput[]
+  skipDuplicates?: boolean
 }
 
 export type MeetingUpsertWithWhereUniqueWithoutCreatorInput = {
@@ -1617,6 +1618,7 @@ export type MeetingCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * The data used to create many Meetings.
    */
   data: Prisma.MeetingCreateManyInput | Prisma.MeetingCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1635,6 +1637,7 @@ export type MeetingCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensi
    * The data used to create many Meetings.
    */
   data: Prisma.MeetingCreateManyInput | Prisma.MeetingCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */
