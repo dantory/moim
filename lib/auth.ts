@@ -6,6 +6,7 @@ export const {
   handlers: { GET, POST },
   auth,
 } = NextAuth({
+  trustHost: true,
   session: {
     strategy: "jwt",
   },
