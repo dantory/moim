@@ -1,10 +1,6 @@
 name: Deploy to AWS Elastic Beanstalk (Docker)
 
 on:
-  push:
-    branches:
-      - main
-      - master
   workflow_dispatch:
 
 env:

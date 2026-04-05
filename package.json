@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:https": "next dev --experimental-https --experimental-https-key ./localhost+2-key.pem --experimental-https-cert ./localhost+2.pem",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start -p ${PORT:-3000}",
     "lint": "eslint",
     "db:generate": "prisma generate",

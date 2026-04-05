@@ -6,7 +6,7 @@ import { MeetingForm } from "@/app/components/meetings/MeetingForm"
 export default async function EditMeetingPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
   const session = await auth()
   const { id } = await params

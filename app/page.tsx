@@ -7,7 +7,13 @@ export const dynamic = "force-dynamic"
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: { category?: string; search?: string; lat?: string; lng?: string; radius?: string }
+  searchParams: Promise<{
+    category?: string
+    search?: string
+    lat?: string
+    lng?: string
+    radius?: string
+  }>
 }) {
   const { category, search, lat, lng, radius } = await searchParams
 

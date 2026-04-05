@@ -13,7 +13,7 @@ import { DeleteButton } from "./DeleteButton"
 export default async function MeetingDetailPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
   const session = await auth()
   const { id } = await params

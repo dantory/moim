@@ -1,6 +1,8 @@
 #!/bin/bash
+set -euo pipefail
+
 cd /var/app/current
-source /opt/elasticbeanstalk/deployment/env
-npm install --legacy-peer-deps --silent 2>&1 | tail -20
-npx prisma generate --silent 2>&1 | tail -10
-echo "Prisma Client regenerated successfully"
+source /opt/elasticbeanstalk/deployment/env 2>/dev/null || true
+
+echo "Applying Prisma migrations..."
+npx prisma migrate deploy

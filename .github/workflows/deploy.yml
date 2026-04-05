@@ -10,6 +10,10 @@ on:
 env:
   NODE_VERSION: '20'
 
+concurrency:
+  group: eb-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -63,17 +67,17 @@ jobs:
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
         GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
 
     - name: Create deployment package
       run: |
         mkdir -p deploy
         cp -r .next deploy/
-        cp -r .ebextensions deploy/
         cp -r .platform deploy/
-        cp -r generated deploy/
         cp -r prisma deploy/
         cp .npmrc deploy/
         cp package*.json deploy/
+        cp next.config.ts deploy/
         cp Procfile deploy/
         cp -r public deploy/ 2>/dev/null || true
         cd deploy
