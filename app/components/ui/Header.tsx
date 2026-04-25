@@ -23,12 +23,20 @@ export async function Header() {
               모임 목록
             </Link>
             {session && (
-              <Link
-                href="/meetings/new"
-                className="transition-colors hover:text-foreground/80 text-foreground/60"
-              >
-                모임 만들기
-              </Link>
+              <>
+                <Link
+                  href="/me"
+                  className="transition-colors hover:text-foreground/80 text-foreground/60"
+                >
+                  내 활동
+                </Link>
+                <Link
+                  href="/meetings/new"
+                  className="transition-colors hover:text-foreground/80 text-foreground/60"
+                >
+                  모임 만들기
+                </Link>
+              </>
             )}
           </nav>
         </div>

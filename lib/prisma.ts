@@ -17,11 +17,12 @@ const createPrismaClient = () => {
 
   try {
     const databaseUrl = new URL(connectionString)
+    const shouldForceSsl = process.env.DATABASE_SSL === "true"
     const isRemotePostgres =
       (databaseUrl.protocol === "postgres:" || databaseUrl.protocol === "postgresql:") &&
       !["localhost", "127.0.0.1"].includes(databaseUrl.hostname)
 
-    if (isRemotePostgres) {
+    if (isRemotePostgres || shouldForceSsl) {
       config.ssl = { rejectUnauthorized: false }
     }
   } catch {

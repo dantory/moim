@@ -1,11 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { GoogleMap, InfoWindow, Marker } from "@react-google-maps/api";
 import Link from "next/link";
 import { MapPin, Users, Calendar } from "lucide-react";
 import { Button } from "../ui/Button";
-import { useGoogleMapsLoader } from "@/lib/google-maps";
+import { useNaverMapsLoader } from "@/lib/naver-maps";
 import { formatMeetingDateShort } from "@/lib/date-format";
 
 interface MeetingMapViewProps {
@@ -29,9 +28,10 @@ interface MeetingMapViewProps {
   onMapReady?: (panTo: (lat: number, lng: number) => void) => void;
 }
 
-const mapContainerStyle = {
-  width: "100%",
-  height: "100%",
+type MeetingMapItem = MeetingMapViewProps["meetings"][number];
+type MeetingMapItemWithLocation = MeetingMapItem & {
+  latitude: number;
+  longitude: number;
 };
 
 const defaultCenter = {
@@ -40,13 +40,16 @@ const defaultCenter = {
 };
 
 export function MeetingMapView({ meetings, selectedId, onMarkerClick, onMapReady }: MeetingMapViewProps) {
-  const { isLoaded } = useGoogleMapsLoader();
-  const mapRef = React.useRef<google.maps.Map | null>(null);
+  const { isLoaded, loadError } = useNaverMapsLoader();
+  const mapElementId = React.useId();
+  const mapRef = React.useRef<naver.maps.Map | null>(null);
+  const markersRef = React.useRef<naver.maps.Marker[]>([]);
+  const listenersRef = React.useRef<Array<{ remove: () => void }>>([]);
   const [selectedMeeting, setSelectedMeeting] = React.useState<typeof meetings[0] | null>(null);
 
   const panTo = React.useCallback((lat: number, lng: number) => {
     if (mapRef.current) {
-      mapRef.current.panTo({ lat, lng });
+      mapRef.current.panTo(new naver.maps.LatLng(lat, lng));
       mapRef.current.setZoom(16);
     }
   }, []);
@@ -55,25 +58,87 @@ export function MeetingMapView({ meetings, selectedId, onMarkerClick, onMapReady
     onMapReady?.(panTo);
   }, [onMapReady, panTo]);
 
-  const meetingsWithLocation = meetings.filter(
-    (m): m is typeof m & { latitude: number; longitude: number } =>
-      m.latitude !== null && m.latitude !== undefined &&
-      m.longitude !== null && m.longitude !== undefined
+  const meetingsWithLocation = React.useMemo(
+    () =>
+      meetings.filter(
+        (meeting): meeting is MeetingMapItemWithLocation =>
+          meeting.latitude !== null &&
+          meeting.latitude !== undefined &&
+          meeting.longitude !== null &&
+          meeting.longitude !== undefined
+      ),
+    [meetings]
   );
 
   React.useEffect(() => {
-    if (mapRef.current && meetingsWithLocation.length > 0) {
-      const bounds = new google.maps.LatLngBounds();
+    if (!isLoaded || mapRef.current) {
+      return;
+    }
+
+    const mapElement = document.getElementById(mapElementId);
+    if (!mapElement) {
+      return;
+    }
+
+    mapRef.current = new naver.maps.Map(mapElement, {
+      center: new naver.maps.LatLng(defaultCenter.lat, defaultCenter.lng),
+      zoom: 12,
+      scaleControl: false,
+      logoControl: true,
+      mapDataControl: false,
+    });
+  }, [isLoaded, mapElementId]);
+
+  React.useEffect(() => {
+    if (!mapRef.current) {
+      return;
+    }
+
+    listenersRef.current.forEach((listener) => listener.remove());
+    listenersRef.current = [];
+    markersRef.current.forEach((marker) => marker.setMap(null));
+    markersRef.current = [];
+
+    meetingsWithLocation.forEach((meeting) => {
+      const marker = new naver.maps.Marker({
+        position: new naver.maps.LatLng(meeting.latitude, meeting.longitude),
+        map: mapRef.current,
+        title: meeting.title,
+      });
+
+      markersRef.current.push(marker);
+      listenersRef.current.push(
+        naver.maps.Event.addListener(marker, "click", () => {
+          setSelectedMeeting(meeting);
+          onMarkerClick?.(meeting.id);
+        })
+      );
+    });
+
+    if (meetingsWithLocation.length === 1) {
+      const meeting = meetingsWithLocation[0];
+      mapRef.current.panTo(new naver.maps.LatLng(meeting.latitude, meeting.longitude));
+      mapRef.current.setZoom(16);
+    } else if (meetingsWithLocation.length > 1) {
+      const bounds = new naver.maps.LatLngBounds();
       meetingsWithLocation.forEach((meeting) => {
-        bounds.extend({ lat: meeting.latitude, lng: meeting.longitude });
+        bounds.extend(new naver.maps.LatLng(meeting.latitude, meeting.longitude));
       });
       mapRef.current.fitBounds(bounds, 50);
     }
-  }, [meetingsWithLocation]);
+  }, [meetingsWithLocation, onMarkerClick]);
+
+  React.useEffect(() => {
+    return () => {
+      listenersRef.current.forEach((listener) => listener.remove());
+      markersRef.current.forEach((marker) => marker.setMap(null));
+      mapRef.current?.destroy();
+    };
+  }, []);
 
   React.useEffect(() => {
     if (selectedId) {
-      const meeting = meetingsWithLocation.find(m => m.id === selectedId);
+      const meeting = meetingsWithLocation.find((item) => item.id === selectedId);
       setSelectedMeeting(meeting || null);
       if (meeting) {
         panTo(meeting.latitude, meeting.longitude);
@@ -86,7 +151,9 @@ export function MeetingMapView({ meetings, selectedId, onMarkerClick, onMapReady
   if (!isLoaded) {
     return (
       <div className="h-full flex items-center justify-center bg-muted rounded-lg">
-        <p className="text-muted-foreground">지도 로딩 중...</p>
+        <p className="text-muted-foreground">
+          {loadError || "지도 로딩 중..."}
+        </p>
       </div>
     );
   }
@@ -108,65 +175,33 @@ export function MeetingMapView({ meetings, selectedId, onMarkerClick, onMapReady
   return (
     <div className="rounded-lg overflow-hidden border h-full flex flex-col">
       <div className="flex-1 relative">
-        <GoogleMap
-          mapContainerStyle={mapContainerStyle}
-          center={defaultCenter}
-          zoom={12}
-          onLoad={(map) => {
-            mapRef.current = map;
-          }}
-          options={{
-            streetViewControl: false,
-            mapTypeControl: false,
-            fullscreenControl: true,
-          }}
-        >
-          {meetingsWithLocation.map((meeting) => (
-            <Marker
-              key={meeting.id}
-              position={{ lat: meeting.latitude, lng: meeting.longitude }}
-              title={meeting.title}
-              onClick={() => {
-                setSelectedMeeting(meeting);
-                onMarkerClick?.(meeting.id);
-              }}
-            />
-          ))}
-          {selectedMeeting && (
-            <InfoWindow
-              position={{ lat: selectedMeeting.latitude!, lng: selectedMeeting.longitude! }}
-              onCloseClick={() => {
-                setSelectedMeeting(null);
-                onMarkerClick?.("");
-              }}
-            >
-              <div className="p-2 min-w-[200px]">
-                <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 mb-2">
-                  {selectedMeeting.category}
-                </span>
-                <h4 className="font-semibold text-sm mb-1">{selectedMeeting.title}</h4>
-                <p className="text-xs text-muted-foreground mb-2">
-                  {selectedMeeting.location}
-                </p>
-                <div className="space-y-1 text-xs text-muted-foreground mb-3">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    {formatMeetingDateShort(selectedMeeting.date)}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Users className="h-3 w-3" />
-                    {selectedMeeting._count?.participants || 0} / {selectedMeeting.maxParticipants}명
-                  </div>
-                </div>
-                <Link href={`/meetings/${selectedMeeting.id}`}>
-                  <Button size="sm" className="w-full text-xs">
-                    자세히 보기
-                  </Button>
-                </Link>
+        <div id={mapElementId} className="h-full w-full" />
+        {selectedMeeting && (
+          <div className="absolute left-4 top-4 z-10 w-[240px] rounded-lg border bg-background p-3 shadow-lg">
+            <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 mb-2">
+              {selectedMeeting.category}
+            </span>
+            <h4 className="font-semibold text-sm mb-1">{selectedMeeting.title}</h4>
+            <p className="text-xs text-muted-foreground mb-2">
+              {selectedMeeting.location}
+            </p>
+            <div className="space-y-1 text-xs text-muted-foreground mb-3">
+              <div className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                {formatMeetingDateShort(selectedMeeting.date)}
               </div>
-            </InfoWindow>
-          )}
-        </GoogleMap>
+              <div className="flex items-center gap-1">
+                <Users className="h-3 w-3" />
+                {selectedMeeting._count?.participants || 0} / {selectedMeeting.maxParticipants}명
+              </div>
+            </div>
+            <Link href={`/meetings/${selectedMeeting.id}`}>
+              <Button size="sm" className="w-full text-xs">
+                자세히 보기
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
       <div className="bg-muted p-3 text-xs text-muted-foreground flex-none">
         <MapPin className="inline h-3 w-3 mr-1" />

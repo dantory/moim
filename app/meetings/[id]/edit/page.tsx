@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { MeetingForm } from "@/app/components/meetings/MeetingForm"
+import { MEETING_CATEGORIES } from "@/lib/meeting-schema"
 
 export default async function EditMeetingPage({
   params,
@@ -27,9 +28,16 @@ export default async function EditMeetingPage({
     redirect(`/meetings/${id}`)
   }
 
+  const initialData = {
+    ...meeting,
+    category: MEETING_CATEGORIES.includes(meeting.category as (typeof MEETING_CATEGORIES)[number])
+      ? (meeting.category as (typeof MEETING_CATEGORIES)[number])
+      : MEETING_CATEGORIES[0],
+  }
+
   return (
     <div className="max-w-2xl mx-auto">
-      <MeetingForm initialData={meeting} isEditing />
+      <MeetingForm initialData={initialData} isEditing />
     </div>
   )
 }

@@ -4,7 +4,6 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
 
 import { Button } from "../ui/Button"
 import { Input } from "../ui/Input"
@@ -16,28 +15,20 @@ import {
 } from "../ui/Card"
 import { DateTimePicker } from "../ui/DateTimePicker"
 import { LocationPicker } from "../ui/LocationPicker"
+import {
+  MEETING_CATEGORIES,
+  meetingCreateSchema,
+  type MeetingCreateInput,
+} from "@/lib/meeting-schema"
 
-const CATEGORIES = ["스터디", "친목", "운동", "취미", "기타"]
-
-const meetingSchema = z.object({
-  title: z.string().min(2, "제목은 2자 이상이어야 합니다."),
-  description: z.string().optional(),
-  category: z.string().min(1, "카테고리를 선택해주세요."),
-  maxParticipants: z.number().min(2, "최소 2명 이상이어야 합니다.").max(100, "최대 100명까지 가능합니다."),
-  date: z.date().min(new Date(), "과거 날짜는 선택할 수 없습니다."),
-  location: z.string().optional(),
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
-})
-
-type MeetingValues = z.infer<typeof meetingSchema>
+type MeetingValues = MeetingCreateInput
 
 interface MeetingFormProps {
   initialData?: {
     id: string
     title: string
     description: string | null
-    category: string
+    category: MeetingValues["category"]
     maxParticipants: number
     date: Date | string
     location: string | null
@@ -65,22 +56,30 @@ export function MeetingForm({ initialData, isEditing }: MeetingFormProps) {
       }
     : {
         title: "",
-        description: "",
+        description: undefined,
         category: "스터디",
         maxParticipants: 10,
         date: new Date(),
-        location: "",
+        location: undefined,
+        latitude: undefined,
+        longitude: undefined,
       }
 
   const {
     register,
     handleSubmit,
     control,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<MeetingValues>({
-    resolver: zodResolver(meetingSchema),
+    resolver: zodResolver(meetingCreateSchema),
     defaultValues,
   })
+
+  const location = watch("location")
+  const latitude = watch("latitude")
+  const longitude = watch("longitude")
 
   const onSubmit = async (data: MeetingValues) => {
     setIsLoading(true)
@@ -156,7 +155,7 @@ export function MeetingForm({ initialData, isEditing }: MeetingFormProps) {
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               {...register("category")}
             >
-              {CATEGORIES.map((category) => (
+              {MEETING_CATEGORIES.map((category) => (
                 <option key={category} value={category}>
                   {category}
                 </option>
@@ -218,18 +217,25 @@ export function MeetingForm({ initialData, isEditing }: MeetingFormProps) {
               render={({ field }) => (
                 <LocationPicker
                   value={
-                    field.value
+                    location
                       ? {
-                          address: field.value,
-                          latitude: control._formValues.latitude || 0,
-                          longitude: control._formValues.longitude || 0,
+                          address: location,
+                          latitude: latitude || 0,
+                          longitude: longitude || 0,
                         }
                       : undefined
                   }
                   onChange={(location) => {
-                    field.onChange(location.address);
-                    control._formValues.latitude = location.latitude;
-                    control._formValues.longitude = location.longitude;
+                    const hasAddress = location.address.trim().length > 0
+                    field.onChange(hasAddress ? location.address : undefined)
+                    setValue("latitude", hasAddress ? location.latitude : undefined, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    })
+                    setValue("longitude", hasAddress ? location.longitude : undefined, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    })
                   }}
                   placeholder="장소를 검색하세요"
                 />

@@ -10,14 +10,11 @@ import { MeetingMapView } from "./MeetingMapView";
 import Link from "next/link";
 import { Calendar, MapPin as MapPinIcon, Users } from "lucide-react";
 import { formatMeetingDateLong, formatMeetingDateShort } from "@/lib/date-format";
+import { MEETING_CATEGORIES, MEETING_CATEGORY_ALL } from "@/lib/meeting-schema";
 
 const CATEGORIES = [
-  { id: "전체", label: "전체" },
-  { id: "스터디", label: "스터디" },
-  { id: "친목", label: "친목" },
-  { id: "욱동", label: "욱동" },
-  { id: "취미", label: "취미" },
-  { id: "기타", label: "기타" },
+  { id: MEETING_CATEGORY_ALL, label: MEETING_CATEGORY_ALL },
+  ...MEETING_CATEGORIES.map((category) => ({ id: category, label: category })),
 ];
 
 const RADIUS_OPTIONS = [
@@ -52,7 +49,7 @@ export function MeetingLayout({ meetings, errorMessage }: MeetingLayoutProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  const currentCategory = searchParams.get("category") || "전체";
+  const currentCategory = searchParams.get("category") || MEETING_CATEGORY_ALL;
   const currentSearch = searchParams.get("search") || "";
   const currentRadius = searchParams.get("radius") || "5";
   const [search, setSearch] = React.useState(currentSearch);
@@ -61,9 +58,17 @@ export function MeetingLayout({ meetings, errorMessage }: MeetingLayoutProps) {
   const [selectedMeetingId, setSelectedMeetingId] = React.useState<string | null>(null);
   const mapPanRef = React.useRef<(lat: number, lng: number) => void>(undefined);
 
+  const handleMapListClick = (meeting: MeetingWithLocation) => {
+    setSelectedMeetingId(meeting.id);
+
+    if (meeting.latitude != null && meeting.longitude != null) {
+      mapPanRef.current?.(meeting.latitude, meeting.longitude);
+    }
+  };
+
   const handleCategoryChange = (category: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (category && category !== "전체") {
+    if (category && category !== MEETING_CATEGORY_ALL) {
       params.set("category", category);
     } else {
       params.delete("category");
@@ -227,7 +232,7 @@ export function MeetingLayout({ meetings, errorMessage }: MeetingLayoutProps) {
                   onMarkerClick={setSelectedMeetingId}
                   onMapReady={(pan) => { mapPanRef.current = pan; }}
                 />
-                <div className="absolute bottom-4 left-4 right-4 bg-background/95 backdrop-blur-sm border rounded-xl shadow-xl max-h-[200px]">
+                <div className="absolute bottom-16 left-4 right-4 bg-background/95 backdrop-blur-sm border rounded-xl shadow-xl max-h-[200px]">
                   <div className="px-3 py-2 border-b">
                     <span className="text-sm font-medium">모임 목록</span>
                   </div>
@@ -236,7 +241,7 @@ export function MeetingLayout({ meetings, errorMessage }: MeetingLayoutProps) {
                       {meetings.map((meeting) => (
                         <button
                           key={meeting.id}
-                          onClick={() => setSelectedMeetingId(meeting.id)}
+                          onClick={() => handleMapListClick(meeting)}
                           className={cn(
                             "w-[180px] shrink-0 bg-card border rounded-lg p-2.5 transition-all text-left",
                             selectedMeetingId === meeting.id

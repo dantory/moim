@@ -63,6 +63,11 @@ export default async function MeetingDetailPage({
           </span>
           {isCreator && (
             <div className="flex gap-2">
+              <Link href={`/meetings/${meeting.id}/admin`}>
+                <Button variant="outline" size="sm">
+                  운영보기
+                </Button>
+              </Link>
               <Link href={`/meetings/${meeting.id}/edit`}>
                 <Button variant="outline" size="sm">
                   수정하기

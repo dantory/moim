@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
+import { Prisma } from "@prisma/client"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { meetingDetailInclude } from "@/lib/meeting-service"
+import { meetingUpdateSchema } from "@/lib/meeting-schema"
 
 export async function GET(
   req: Request,
@@ -10,21 +13,7 @@ export async function GET(
   try {
     const meeting = await prisma.meeting.findUnique({
       where: { id },
-      include: {
-        creator: {
-          select: { id: true, name: true, email: true },
-        },
-        participants: {
-          include: {
-            user: {
-              select: { id: true, name: true, email: true },
-            },
-          },
-        },
-        _count: {
-          select: { participants: true },
-        },
-      },
+      include: meetingDetailInclude,
     })
 
     if (!meeting) {
@@ -44,7 +33,7 @@ export async function GET(
   }
 }
 
-export async function PATCH(
+async function updateMeeting(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -77,8 +66,20 @@ export async function PATCH(
       )
     }
 
-    const body = await req.json()
-    const { title, description, category, maxParticipants, date, location } = body
+    const rawBody = await req.json()
+    const parsed = meetingUpdateSchema.safeParse({
+      ...rawBody,
+      ...(rawBody?.date ? { date: new Date(rawBody.date) } : {}),
+    })
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "입력값이 올바르지 않습니다", issues: parsed.error.flatten() },
+        { status: 400 }
+      )
+    }
+
+    const { title, description, category, maxParticipants, date, location, latitude, longitude } =
+      parsed.data
 
     const meeting = await prisma.meeting.update({
       where: { id },
@@ -89,32 +90,40 @@ export async function PATCH(
         ...(maxParticipants && { maxParticipants }),
         ...(date && { date: new Date(date) }),
         ...(location !== undefined && { location }),
+        ...(latitude !== undefined && { latitude }),
+        ...(longitude !== undefined && { longitude }),
       },
-      include: {
-        creator: {
-          select: { id: true, name: true, email: true },
-        },
-        participants: {
-          include: {
-            user: {
-              select: { id: true, name: true, email: true },
-            },
-          },
-        },
-        _count: {
-          select: { participants: true },
-        },
-      },
+      include: meetingDetailInclude,
     })
 
     return NextResponse.json(meeting)
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientValidationError) {
+      return NextResponse.json(
+        { error: "입력값이 올바르지 않습니다" },
+        { status: 400 }
+      )
+    }
     console.error("Failed to update meeting:", error)
     return NextResponse.json(
       { error: "모임 수정에 실패했습니다" },
       { status: 500 }
     )
   }
+}
+
+export async function PATCH(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  return updateMeeting(req, context)
+}
+
+export async function PUT(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  return updateMeeting(req, context)
 }
 
 export async function DELETE(

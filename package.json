@@ -18,7 +18,6 @@
     "@prisma/adapter-pg": "^7.6.0",
     "@prisma/client": "^7.6.0",
     "@radix-ui/react-slot": "^1.2.4",
-    "@react-google-maps/api": "^2.20.8",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

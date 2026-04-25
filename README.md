@@ -1,4 +1,12 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is a [Next.js](https://nextjs.org) project for a sports meetup platform.
+
+## Product Docs
+
+- `docs/product-direction.md`: 서비스 방향과 핵심 가치
+- `docs/domain-model-draft.md`: `Club / Event / Membership` 확장 기준
+- `docs/mvp-ia-and-flows.md`: MVP 정보 구조와 핵심 사용자 플로우
+- `docs/two-week-roadmap.md`: 다음 2주 실행 계획
+- `docs/current-progress.md`: 현재 구현 상태와 다음 작업 기록
 
 ## Getting Started
 

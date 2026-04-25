@@ -11,32 +11,37 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?
-  password      String
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  meetings      Meeting[]
+  id             String             @id @default(cuid())
+  email          String             @unique
+  name           String?
+  password       String
+  image          String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  meetings       Meeting[]
   participations MeetingParticipant[]
+  attendances    MeetingAttendance[]
+  fees           MeetingFee[]
 }
 
 model Meeting {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  category    String
-  maxParticipants Int @default(10)
-  date        DateTime
-  location    String?
-  latitude    Float?
-  longitude   Float?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  creatorId   String
-  creator     User     @relation(fields: [creatorId], references: [id])
-  participants MeetingParticipant[]
+  id              String              @id @default(cuid())
+  title           String
+  description     String?
+  category        String
+  maxParticipants Int                 @default(10)
+  date            DateTime
+  location        String?
+  latitude        Float?
+  longitude       Float?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  creatorId       String
+  creator         User                @relation(fields: [creatorId], references: [id])
+  participants    MeetingParticipant[]
+  attendances     MeetingAttendance[]
+  guests          MeetingGuest[]
+  fees            MeetingFee[]
 }
 
 model MeetingParticipant {
@@ -46,6 +51,59 @@ model MeetingParticipant {
   joinedAt  DateTime @default(now())
   meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([meetingId, userId])
+}
+
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT
+}
+
+model MeetingAttendance {
+  id        String           @id @default(cuid())
+  meetingId String
+  userId    String
+  status    AttendanceStatus
+  note      String?
+  checkedAt DateTime         @default(now())
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  meeting   Meeting          @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([meetingId, userId])
+}
+
+model MeetingGuest {
+  id          String   @id @default(cuid())
+  meetingId   String
+  name        String
+  phoneNumber String?
+  note        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  meeting     Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+}
+
+enum MeetingFeeStatus {
+  UNPAID
+  PAID
+  WAIVED
+}
+
+model MeetingFee {
+  id        String           @id @default(cuid())
+  meetingId String
+  userId    String
+  status    MeetingFeeStatus @default(UNPAID)
+  note      String?
+  paidAt    DateTime?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  meeting   Meeting          @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([meetingId, userId])
 }

@@ -6,14 +6,15 @@ import { Search } from "lucide-react"
 
 import { Input } from "../ui/Input"
 import { Button } from "../ui/Button"
+import { MEETING_CATEGORIES, MEETING_CATEGORY_ALL } from "@/lib/meeting-schema"
 
-const CATEGORIES = ["전체", "스터디", "친목", "욱동", "취미", "기타"]
+const CATEGORIES = [MEETING_CATEGORY_ALL, ...MEETING_CATEGORIES]
 
 export function MeetingFilter() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const currentCategory = searchParams.get("category") || "전체"
+  const currentCategory = searchParams.get("category") || MEETING_CATEGORY_ALL
   const currentSearch = searchParams.get("search") || ""
 
   const [search, setSearch] = useState(currentSearch)
@@ -21,7 +22,7 @@ export function MeetingFilter() {
   const createQueryString = useCallback(
     (name: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString())
-      if (value && value !== "전체") {
+      if (value && value !== MEETING_CATEGORY_ALL) {
         params.set(name, value)
       } else {
         params.delete(name)

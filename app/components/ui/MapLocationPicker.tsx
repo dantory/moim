@@ -2,10 +2,9 @@
 
 import * as React from "react";
 import { X, MapPin, Search } from "lucide-react";
-import { GoogleMap, Marker } from "@react-google-maps/api";
 import { Button } from "./Button";
 import { Input } from "./Input";
-import { useGoogleMapsLoader } from "@/lib/google-maps";
+import { useNaverMapsLoader } from "@/lib/naver-maps";
 
 interface MapLocationPickerProps {
   isOpen: boolean;
@@ -22,11 +21,6 @@ interface MapLocationPickerProps {
   };
 }
 
-const mapContainerStyle = {
-  width: "100%",
-  height: "400px",
-};
-
 const defaultCenter = {
   lat: 37.5665,
   lng: 126.978,
@@ -38,12 +32,11 @@ export function MapLocationPicker({
   onSelect,
   initialLocation,
 }: MapLocationPickerProps) {
-  const { isLoaded } = useGoogleMapsLoader();
+  const { isLoaded, loadError } = useNaverMapsLoader();
+  const mapElementId = React.useId();
 
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [markerPosition, setMarkerPosition] = React.useState<
-    google.maps.LatLngLiteral
-  >(
+  const [markerPosition, setMarkerPosition] = React.useState(
     initialLocation
       ? { lat: initialLocation.latitude, lng: initialLocation.longitude }
       : defaultCenter
@@ -53,22 +46,18 @@ export function MapLocationPicker({
   );
   const [isSearching, setIsSearching] = React.useState(false);
 
-  const mapRef = React.useRef<google.maps.Map | null>(null);
+  const mapRef = React.useRef<naver.maps.Map | null>(null);
+  const markerRef = React.useRef<naver.maps.Marker | null>(null);
+  const listenersRef = React.useRef<Array<{ remove: () => void }>>([]);
 
-  const handleMapClick = (e: google.maps.MapMouseEvent) => {
-    if (e.latLng) {
-      const lat = e.latLng.lat();
-      const lng = e.latLng.lng();
-      setMarkerPosition({ lat, lng });
-      reverseGeocode(lat, lng);
-    }
-  };
+  const updateMarkerPosition = React.useCallback((lat: number, lng: number) => {
+    setMarkerPosition({ lat, lng });
+    markerRef.current?.setPosition(new naver.maps.LatLng(lat, lng));
+  }, []);
 
-  const reverseGeocode = async (lat: number, lng: number) => {
+  const reverseGeocode = React.useCallback(async (lat: number, lng: number) => {
     try {
-      const response = await fetch(
-        `/api/geocode?query=${lat},${lng}`
-      );
+      const response = await fetch(`/api/geocode?query=${lat},${lng}`);
       const data = await response.json();
 
       if (data.status === "OK" && data.results.length > 0) {
@@ -77,7 +66,70 @@ export function MapLocationPicker({
     } catch (error) {
       console.error("Reverse geocoding failed:", error);
     }
-  };
+  }, []);
+
+  React.useEffect(() => {
+    if (!isOpen || !isLoaded || mapRef.current) {
+      return;
+    }
+
+    const mapElement = document.getElementById(mapElementId);
+    if (!mapElement) {
+      return;
+    }
+
+    const center = new naver.maps.LatLng(markerPosition.lat, markerPosition.lng);
+    const map = new naver.maps.Map(mapElement, {
+      center,
+      zoom: 14,
+      scaleControl: false,
+      logoControl: true,
+      mapDataControl: false,
+    });
+    const marker = new naver.maps.Marker({
+      position: center,
+      map,
+      draggable: true,
+    });
+
+    mapRef.current = map;
+    markerRef.current = marker;
+    listenersRef.current = [
+      naver.maps.Event.addListener(map, "click", (event) => {
+        if (!event.coord) return;
+        const lat = event.coord.lat();
+        const lng = event.coord.lng();
+        updateMarkerPosition(lat, lng);
+        reverseGeocode(lat, lng);
+      }),
+      naver.maps.Event.addListener(marker, "dragend", () => {
+        const position = marker.getPosition();
+        const lat = position.lat();
+        const lng = position.lng();
+        updateMarkerPosition(lat, lng);
+        reverseGeocode(lat, lng);
+      }),
+    ];
+  }, [
+    isLoaded,
+    isOpen,
+    mapElementId,
+    markerPosition.lat,
+    markerPosition.lng,
+    reverseGeocode,
+    updateMarkerPosition,
+  ]);
+
+  React.useEffect(() => {
+    if (isOpen) return;
+
+    listenersRef.current.forEach((listener) => listener.remove());
+    listenersRef.current = [];
+    markerRef.current?.setMap(null);
+    markerRef.current = null;
+    mapRef.current?.destroy();
+    mapRef.current = null;
+  }, [isOpen]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -93,14 +145,12 @@ export function MapLocationPicker({
         const result = data.results[0];
         const lat = result.geometry.location.lat;
         const lng = result.geometry.location.lng;
-        
-        setMarkerPosition({ lat, lng });
+
+        updateMarkerPosition(lat, lng);
         setSelectedAddress(result.formatted_address);
-        
-        if (mapRef.current) {
-          mapRef.current.panTo({ lat, lng });
-          mapRef.current.setZoom(16);
-        }
+
+        mapRef.current?.panTo(new naver.maps.LatLng(lat, lng));
+        mapRef.current?.setZoom(16);
       }
     } catch (error) {
       console.error("Search failed:", error);
@@ -116,15 +166,6 @@ export function MapLocationPicker({
       longitude: markerPosition.lng,
     });
     onClose();
-  };
-
-  const handleMarkerDragEnd = (e: google.maps.MapMouseEvent) => {
-    if (e.latLng) {
-      const lat = e.latLng.lat();
-      const lng = e.latLng.lng();
-      setMarkerPosition({ lat, lng });
-      reverseGeocode(lat, lng);
-    }
   };
 
   if (!isOpen) return null;
@@ -182,29 +223,12 @@ export function MapLocationPicker({
           <div className="rounded-md overflow-hidden border">
             {!isLoaded ? (
               <div className="h-[400px] flex items-center justify-center bg-muted">
-                <p className="text-muted-foreground">지도 로딩 중...</p>
+                <p className="text-muted-foreground">
+                  {loadError || "지도 로딩 중..."}
+                </p>
               </div>
             ) : (
-              <GoogleMap
-                mapContainerStyle={mapContainerStyle}
-                center={markerPosition}
-                zoom={14}
-                onClick={handleMapClick}
-                onLoad={(map) => {
-                  mapRef.current = map;
-                }}
-                options={{
-                  streetViewControl: false,
-                  mapTypeControl: false,
-                  fullscreenControl: false,
-                }}
-              >
-                <Marker
-                  position={markerPosition}
-                  draggable={true}
-                  onDragEnd={handleMarkerDragEnd}
-                />
-              </GoogleMap>
+              <div id={mapElementId} className="h-[400px] w-full" />
             )}
           </div>
 
