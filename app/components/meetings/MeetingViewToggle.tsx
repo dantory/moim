@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Calendar, MapPin, Users } from "lucide-react";
 import { formatMeetingDateShort } from "@/lib/date-format";
+import { getCurrentPosition, getGeolocationErrorMessage } from "@/lib/location";
 
 interface MeetingWithLocation {
   id: string;
@@ -54,34 +55,19 @@ export function MeetingViewToggle({ meetings }: MeetingViewToggleProps) {
     }
 
     setIsLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
+    void getCurrentPosition()
+      .then((position) => {
         const params = new URLSearchParams(searchParams.toString());
-        params.set("lat", position.coords.latitude.toString());
-        params.set("lng", position.coords.longitude.toString());
+        params.set("lat", position.latitude.toString());
+        params.set("lng", position.longitude.toString());
         params.set("radius", currentRadius);
         router.push(`/?${params.toString()}`);
         setIsLocating(false);
-      },
-      (error) => {
-        console.error("Error getting location:", error);
-        let errorMsg = "위치를 가져올 수 없습니다.";
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            errorMsg = "위치 권한이 거부되었습니다. 브라우저 설정에서 위치 접근을 허용해주세요.";
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMsg = "위치 정보를 사용할 수 없습니다.";
-            break;
-          case error.TIMEOUT:
-            errorMsg = "위치 요청 시간이 초과되었습니다.";
-            break;
-        }
-        alert(errorMsg);
+      })
+      .catch((error) => {
+        alert(getGeolocationErrorMessage(error));
         setIsLocating(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
+      });
   };
 
   const clearLocationFilter = () => {

@@ -1,15 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { Search, MapPin, LocateFixed, List, Map } from "lucide-react";
 import { Input } from "../ui/Input";
 import { Button } from "../ui/Button";
+import { LocationPicker } from "../ui/LocationPicker";
 import { cn } from "@/lib/utils";
 import { MeetingMapView } from "./MeetingMapView";
 import Link from "next/link";
 import { Calendar, MapPin as MapPinIcon, Users } from "lucide-react";
 import { formatMeetingDateLong, formatMeetingDateShort } from "@/lib/date-format";
+import { getCurrentPosition, getGeolocationErrorMessage } from "@/lib/location";
 import { MEETING_CATEGORIES, MEETING_CATEGORY_ALL } from "@/lib/meeting-schema";
 
 const CATEGORIES = [
@@ -46,19 +47,36 @@ interface MeetingLayoutProps {
 }
 
 export function MeetingLayout({ meetings, errorMessage }: MeetingLayoutProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  
-  const currentCategory = searchParams.get("category") || MEETING_CATEGORY_ALL;
-  const currentSearch = searchParams.get("search") || "";
-  const currentRadius = searchParams.get("radius") || "5";
-  const [search, setSearch] = React.useState(currentSearch);
+  const [visibleMeetings, setVisibleMeetings] = React.useState(meetings);
+  const [currentCategory, setCurrentCategory] = React.useState<string>(MEETING_CATEGORY_ALL);
+  const [currentRadius, setCurrentRadius] = React.useState("5");
+  const [search, setSearch] = React.useState("");
   const [isLocating, setIsLocating] = React.useState(false);
+  const [isFiltering, setIsFiltering] = React.useState(false);
+  const [clientErrorMessage, setClientErrorMessage] = React.useState<string | null>(null);
+  const [selectedLocation, setSelectedLocation] = React.useState<{
+    address: string;
+    latitude: number;
+    longitude: number;
+  } | undefined>(undefined);
+  const [userLocation, setUserLocation] = React.useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
   const [viewMode, setViewMode] = React.useState<"list" | "map">("map");
   const [selectedMeetingId, setSelectedMeetingId] = React.useState<string | null>(null);
   const mapPanRef = React.useRef<(lat: number, lng: number) => void>(undefined);
 
+  React.useEffect(() => {
+    setVisibleMeetings(meetings);
+  }, [meetings]);
+
   const handleMapListClick = (meeting: MeetingWithLocation) => {
+    if (selectedMeetingId === meeting.id) {
+      setSelectedMeetingId(null);
+      return;
+    }
+
     setSelectedMeetingId(meeting.id);
 
     if (meeting.latitude != null && meeting.longitude != null) {
@@ -67,25 +85,50 @@ export function MeetingLayout({ meetings, errorMessage }: MeetingLayoutProps) {
   };
 
   const handleCategoryChange = (category: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (category && category !== MEETING_CATEGORY_ALL) {
-      params.set("category", category);
-    } else {
-      params.delete("category");
-    }
-    router.push(`/?${params.toString()}`);
+    setCurrentCategory(category);
+    void fetchMeetings({
+      category,
+      search,
+      radius: currentRadius,
+      location: userLocation,
+    });
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    const params = new URLSearchParams(searchParams.toString());
-    if (search) {
-      params.set("search", search);
-    } else {
-      params.delete("search");
-    }
-    router.push(`/?${params.toString()}`);
+    void fetchMeetings({
+      category: currentCategory,
+      search,
+      radius: currentRadius,
+      location: userLocation,
+    });
   };
+
+  React.useEffect(() => {
+    if (!navigator.geolocation) {
+      return;
+    }
+
+    void getCurrentPosition()
+      .then((location) => {
+        setSelectedLocation({
+          address: "현재 위치",
+          ...location,
+        });
+        setUserLocation(location);
+        void fetchMeetings({
+          category: currentCategory,
+          search,
+          radius: currentRadius,
+          location,
+        });
+      })
+      .catch(() => {
+        setUserLocation(null);
+      });
+    // Initial location lookup only. Further filtering is driven by controls.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleLocationSearch = () => {
     if (!navigator.geolocation) {
@@ -94,23 +137,101 @@ export function MeetingLayout({ meetings, errorMessage }: MeetingLayoutProps) {
     }
 
     setIsLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set("lat", position.coords.latitude.toString());
-        params.set("lng", position.coords.longitude.toString());
-        params.set("radius", currentRadius);
-        router.push(`/?${params.toString()}`);
+    setClientErrorMessage(null);
+    void getCurrentPosition()
+      .then((location) => {
+        setSelectedLocation({
+          address: "현재 위치",
+          ...location,
+        });
+        setUserLocation(location);
+        void fetchMeetings({
+          category: currentCategory,
+          search,
+          radius: currentRadius,
+          location,
+        });
         setIsLocating(false);
-      },
-      (error) => {
-        console.error("Error getting location:", error);
-        alert("위치를 가져올 수 없습니다.");
+      })
+      .catch((error) => {
+        setClientErrorMessage(
+          `${getGeolocationErrorMessage(error)} 주소나 지도에서 기준 위치를 직접 선택해 주세요.`
+        );
         setIsLocating(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
+      });
   };
+
+  const handleSelectedLocationChange = (location: {
+    address: string;
+    latitude: number;
+    longitude: number;
+  }) => {
+    const hasLocation = location.address.trim().length > 0;
+    const nextLocation = hasLocation
+      ? { latitude: location.latitude, longitude: location.longitude }
+      : null;
+
+    setSelectedLocation(hasLocation ? location : undefined);
+    setUserLocation(nextLocation);
+    void fetchMeetings({
+      category: currentCategory,
+      search,
+      radius: currentRadius,
+      location: nextLocation,
+    });
+  };
+
+  async function fetchMeetings({
+    category,
+    search,
+    radius,
+    location,
+  }: {
+    category: string;
+    search: string;
+    radius: string;
+    location: { latitude: number; longitude: number } | null;
+  }) {
+    setIsFiltering(true);
+    setClientErrorMessage(null);
+
+    try {
+      const params = new URLSearchParams();
+      if (category !== MEETING_CATEGORY_ALL) {
+        params.set("category", category);
+      }
+      if (search.trim()) {
+        params.set("search", search.trim());
+      }
+      if (location) {
+        params.set("lat", location.latitude.toString());
+        params.set("lng", location.longitude.toString());
+        params.set("radius", radius);
+      }
+
+      const response = await fetch(`/api/meetings?${params.toString()}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "모임 목록을 불러오지 못했습니다.");
+      }
+
+      setVisibleMeetings(
+        data.map((meeting: MeetingWithLocation & { date: string }) => ({
+          ...meeting,
+          date: new Date(meeting.date),
+        }))
+      );
+      setSelectedMeetingId(null);
+    } catch (error) {
+      console.error("Failed to filter meetings:", error);
+      setClientErrorMessage(
+        error instanceof Error ? error.message : "모임 목록을 불러오지 못했습니다."
+      );
+    } finally {
+      setIsFiltering(false);
+    }
+  }
 
   return (
     <div className="flex flex-col h-[calc(100vh-6rem)]">
@@ -138,11 +259,14 @@ export function MeetingLayout({ meetings, errorMessage }: MeetingLayoutProps) {
             <select
               value={currentRadius}
               onChange={(e) => {
-                const params = new URLSearchParams(searchParams.toString());
-                if (params.has("lat") && params.has("lng")) {
-                  params.set("radius", e.target.value);
-                  router.push(`/?${params.toString()}`);
-                }
+                const nextRadius = e.target.value;
+                setCurrentRadius(nextRadius);
+                void fetchMeetings({
+                  category: currentCategory,
+                  search,
+                  radius: nextRadius,
+                  location: userLocation,
+                });
               }}
               className="h-9 px-2 rounded-md border border-input bg-background text-sm"
             >
@@ -157,12 +281,19 @@ export function MeetingLayout({ meetings, errorMessage }: MeetingLayoutProps) {
               variant="outline"
               size="sm"
               onClick={handleLocationSearch}
-              disabled={isLocating}
+              disabled={isLocating || isFiltering}
               className="flex items-center gap-1 h-9"
             >
               <LocateFixed className="h-4 w-4" />
               {isLocating ? "위치 확인 중..." : "주변 모임"}
             </Button>
+            <div className="w-64">
+              <LocationPicker
+                value={selectedLocation}
+                onChange={handleSelectedLocationChange}
+                placeholder="기준 위치 직접 설정"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -193,7 +324,7 @@ export function MeetingLayout({ meetings, errorMessage }: MeetingLayoutProps) {
         <div className="flex-1 flex flex-col min-h-0">
           <div className="flex-none px-4 py-2 border-b flex items-center justify-between bg-background">
             <span className="text-sm text-muted-foreground">
-              총 {meetings.length}개의 모임
+              총 {visibleMeetings.length}개의 모임
             </span>
             <div className="inline-flex rounded-md border bg-background p-1">
               <Button
@@ -223,22 +354,30 @@ export function MeetingLayout({ meetings, errorMessage }: MeetingLayoutProps) {
                 {errorMessage}
               </div>
             ) : null}
+            {clientErrorMessage ? (
+              <div className="mx-4 mt-4 rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                {clientErrorMessage}
+              </div>
+            ) : null}
             <div className="relative flex-1 min-h-0">
               {viewMode === "map" ? (
                 <div className="absolute inset-0">
                 <MeetingMapView
-                  meetings={meetings}
+                  meetings={visibleMeetings}
                   selectedId={selectedMeetingId}
+                  userLocation={userLocation}
                   onMarkerClick={setSelectedMeetingId}
                   onMapReady={(pan) => { mapPanRef.current = pan; }}
                 />
                 <div className="absolute bottom-16 left-4 right-4 bg-background/95 backdrop-blur-sm border rounded-xl shadow-xl max-h-[200px]">
                   <div className="px-3 py-2 border-b">
-                    <span className="text-sm font-medium">모임 목록</span>
+                    <span className="text-sm font-medium">
+                      {isFiltering ? "모임 목록 갱신 중..." : "모임 목록"}
+                    </span>
                   </div>
                   <div className="p-3 overflow-x-auto">
                     <div className="flex gap-2" style={{ minWidth: "max-content" }}>
-                      {meetings.map((meeting) => (
+                      {visibleMeetings.map((meeting) => (
                         <button
                           key={meeting.id}
                           onClick={() => handleMapListClick(meeting)}
@@ -280,7 +419,7 @@ export function MeetingLayout({ meetings, errorMessage }: MeetingLayoutProps) {
               ) : (
                 <div className="h-full overflow-y-auto p-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
-                  {meetings.map((meeting) => (
+                  {visibleMeetings.map((meeting) => (
                     <Link
                       key={meeting.id}
                       href={`/meetings/${meeting.id}`}

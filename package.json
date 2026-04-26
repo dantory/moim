@@ -5,6 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "dev:https": "next dev --experimental-https --experimental-https-key ./localhost+2-key.pem --experimental-https-cert ./localhost+2.pem",
+    "dev:secure": "next dev --experimental-https --experimental-https-key ./localhost+2-key.pem --experimental-https-cert ./localhost+2.pem",
+    "db:tunnel": "tail -f /dev/null | aws ec2-instance-connect ssh --region ap-northeast-2 --instance-id i-01d84df2ab7dbde50 --os-user ec2-user --connection-type direct --local-forwarding 5433:moim-db.crh9fdl321vd.ap-northeast-2.rds.amazonaws.com:5432",
+    "dev:tunnel": "sh -c 'npm run db:tunnel & tunnel=$!; trap \"kill $tunnel\" EXIT INT TERM; sleep 3; npm run dev:secure'",
     "build": "next build --webpack",
     "start": "next start -p ${PORT:-3000}",
     "lint": "eslint",

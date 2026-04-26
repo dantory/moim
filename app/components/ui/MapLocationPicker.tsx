@@ -48,7 +48,7 @@ export function MapLocationPicker({
 
   const mapRef = React.useRef<naver.maps.Map | null>(null);
   const markerRef = React.useRef<naver.maps.Marker | null>(null);
-  const listenersRef = React.useRef<Array<{ remove: () => void }>>([]);
+  const listenersRef = React.useRef<unknown[]>([]);
 
   const updateMarkerPosition = React.useCallback((lat: number, lng: number) => {
     setMarkerPosition({ lat, lng });
@@ -123,7 +123,7 @@ export function MapLocationPicker({
   React.useEffect(() => {
     if (isOpen) return;
 
-    listenersRef.current.forEach((listener) => listener.remove());
+    listenersRef.current.forEach((listener) => naver.maps.Event.removeListener(listener));
     listenersRef.current = [];
     markerRef.current?.setMap(null);
     markerRef.current = null;
